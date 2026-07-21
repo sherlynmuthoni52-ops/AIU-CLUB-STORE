@@ -1,0 +1,26 @@
+:root { --navy:#11213f; --blue:#1769e0; --gold:#f4b942; --paper:#f6f8fc; --ink:#172033; }
+* { box-sizing:border-box; }
+body { margin:0; font-family:Arial, sans-serif; color:var(--ink); background:var(--paper); }
+a { color:inherit; text-decoration:none; }
+.navbar { background:var(--navy); color:#fff; padding:16px 7%; display:flex; justify-content:space-between; align-items:center; }
+.brand { font-size:1.2rem; font-weight:800; }
+.nav-links { display:flex; gap:20px; align-items:center; }
+.nav-links a:hover { color:var(--gold); }
+.container { width:min(1100px, 86%); margin:0 auto; }
+.hero { background:linear-gradient(120deg, var(--navy), var(--blue)); color:#fff; padding:85px 7%; text-align:center; }
+.hero h1 { font-size:clamp(2rem, 6vw, 4rem); margin:0; }
+.hero p { font-size:1.15rem; max-width:650px; margin:18px auto 30px; }
+.button { display:inline-block; padding:12px 20px; border-radius:6px; background:var(--gold); color:#202020; font-weight:bold; }
+.button.outline { background:transparent; color:#fff; border:1px solid #fff; margin-left:8px; }
+.section { padding:52px 0; }
+.section h2 { margin-top:0; text-align:center; }
+.grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; }
+.card { background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 3px 14px #15233c18; padding:20px; }
+.card-image { height:150px; background:#dbe8fb; display:grid; place-items:center; color:#46617f; font-size:2.8rem; margin:-20px -20px 16px; }
+.price { color:var(--blue); font-size:1.1rem; font-weight:bold; }
+.event-date { color:#d56300; font-weight:bold; }
+.footer { background:var(--navy); color:#dfe8fa; padding:26px 7%; text-align:center; }
+.table { width:100%; border-collapse:collapse; background:#fff; }
+.table th,.table td { padding:14px; border-bottom:1px solid #e5e8ef; text-align:left; }
+.total { text-align:right; font-size:1.2rem; font-weight:bold; margin-top:18px; }
+@media (max-width:700px) { .navbar { flex-direction:column; gap:12px; } .nav-links { gap:12px; flex-wrap:wrap; justify-content:center; } .grid { grid-template-columns:1fr; } }
