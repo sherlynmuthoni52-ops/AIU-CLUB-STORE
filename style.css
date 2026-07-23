@@ -1,4 +1,4 @@
-:root { --navy:#11213f; --blue:#1769e0; --gold:#f4b942; --paper:#f6f8fc; --ink:#172033; }
+:root { --navy:#000000; --blue:#C1121F; --gold:#ffffff; --paper:#ffffff; --ink:#000000; }
 * { box-sizing:border-box; }
 body { margin:0; font-family:Arial, sans-serif; color:var(--ink); background:var(--paper); }
 a { color:inherit; text-decoration:none; }
@@ -16,9 +16,9 @@ a { color:inherit; text-decoration:none; }
 .section h2 { margin-top:0; text-align:center; }
 .grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; }
 .card { background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 3px 14px #15233c18; padding:20px; }
-.card-image { height:150px; background:#dbe8fb; display:grid; place-items:center; color:#46617f; font-size:2.8rem; margin:-20px -20px 16px; }
+.card-image { height:150px; background:var(--blue); display:grid; place-items:center; color:#fff; font-size:2.8rem; margin:-20px -20px 16px; }
 .price { color:var(--blue); font-size:1.1rem; font-weight:bold; }
-.event-date { color:#d56300; font-weight:bold; }
+.event-date { color:var(--blue); font-weight:bold; }
 .footer { background:var(--navy); color:#dfe8fa; padding:26px 7%; text-align:center; }
 .table { width:100%; border-collapse:collapse; background:#fff; }
 .table th,.table td { padding:14px; border-bottom:1px solid #e5e8ef; text-align:left; }
