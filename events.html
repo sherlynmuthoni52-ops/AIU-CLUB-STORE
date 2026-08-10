@@ -24,7 +24,33 @@
   <!-- Main Content: Upcoming Events -->
   <main class="container section">
     <h2>Upcoming Events</h2>
-    <div class="grid">
+
+    <!-- Booking form demo -->
+    <section class="booking-section" style="margin-bottom:1rem;">
+      <form id="booking-form" class="card" style="padding:12px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+        <label style="flex:1 1 200px;">
+          Name:<br>
+          <input name="name" type="text" placeholder="Full name" required>
+          <div class="name-hint" style="font-size:0.85rem;color:#666;margin-top:4px;"></div>
+        </label>
+        <label style="flex:1 1 200px;">
+          Email:<br>
+          <input name="email" type="email" placeholder="you@example.com" required>
+        </label>
+        <label style="width:120px;">
+          Quantity:<br>
+          <input name="qty" type="number" value="1" min="1" required>
+        </label>
+        <button class="button" type="submit">Book (Demo)</button>
+      </form>
+    </section>
+
+    <!-- Search box for events -->  
+    <div style="margin-bottom:12px;">
+      <input id="events-search" placeholder="Search events (type to filter)..." style="width:100%;padding:8px;border-radius:6px;border:1px solid #ccc;">
+    </div>
+
+    <div id="events-list" class="grid">
 
       <!-- AIU Talent Night -->
       <article class="card">
@@ -64,5 +90,6 @@
     © 2026 AIU Student Club Store
   </footer>
 
+  <script src="main.js" defer></script>
 </body>
 </html>
