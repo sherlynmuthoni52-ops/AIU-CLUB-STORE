@@ -43,7 +43,7 @@ require __DIR__ . '/includes/header.php';
     <?php if ($products && $products->num_rows) { while ($product = $products->fetch_assoc()) { ?>
       <article class="card">
         <div class="card-image">
-          <?php echo $product['image'] ? '<img src="uploads/' . htmlspecialchars($product['image']) . '" alt="">' : 'AIU'; ?>
+          <?php echo $product['image'] ? '<img src="uploads/' . htmlspecialchars($product['image']) . '" alt="' . htmlspecialchars($product['name']) . '">' : 'AIU'; ?>
         </div>
         <p class="muted">
           <?php echo htmlspecialchars($product['club_name']); ?> · <?php echo htmlspecialchars($product['category']); ?>
