@@ -1,4 +1,4 @@
--- Run this after importing database.sql through phpMyAdmin.
+ -- Run this after importing database.sql through phpMyAdmin.
 USE aiu_club_store;
 
 INSERT INTO clubs (name, description, logo) VALUES
