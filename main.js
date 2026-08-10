@@ -73,12 +73,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const formData = new FormData(bookingForm);
       const name = (formData.get('name') || '').trim();
       const email = (formData.get('email') || '').trim();
+      const phone = (formData.get('phone') || '').trim();
       const qty = Number(formData.get('qty') || 0);
+      const eventId = formData.get('event') || '';
 
       const errors = [];
       if (name.length < 2) errors.push({ field: 'name', message: 'Enter your full name (2+ characters).' });
       if (!/^\S+@\S+\.\S+$/.test(email)) errors.push({ field: 'email', message: 'Enter a valid email address.' });
+      if (!/^\+?\d{9,15}$/.test(phone)) errors.push({ field: 'phone', message: 'Enter a valid phone number (digits only, include country code).' });
       if (!Number.isInteger(qty) || qty < 1) errors.push({ field: 'qty', message: 'Quantity must be 1 or more.' });
+      if (!eventId) errors.push({ field: 'event', message: 'Please select an event.' });
 
       if (errors.length) {
         // display errors
@@ -87,8 +91,26 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // Simulate successful booking
-      flashMessage('Booking successful — check your email for confirmation.', 'success');
+      // Check available spots before confirming
+      const spotsEl = document.querySelector(`.event-card[data-id="${eventId}"] .spots`);
+      let available = Infinity;
+      if (spotsEl) available = Number(spotsEl.dataset.spots || spotsEl.textContent.replace(/\D/g, '') || 0);
+      if (qty > available) {
+        showFieldError(bookingForm, 'qty', `Only ${available} spot(s) available for the selected event.`);
+        flashMessage('Not enough spots available.', 'info');
+        return;
+      }
+
+      // Reduce spots and update UI
+      if (spotsEl) {
+        let spots = available - qty;
+        spotsEl.dataset.spots = spots;
+        spotsEl.textContent = `${spots} left`;
+        spotsEl.classList.add('pulse');
+        setTimeout(() => spotsEl.classList.remove('pulse'), 900);
+      }
+
+      flashMessage('Booking successful — confirmation sent to your email.', 'success');
       bookingForm.reset();
     });
 
@@ -99,6 +121,33 @@ document.addEventListener('DOMContentLoaded', () => {
         const len = e.target.value.length;
         const hint = bookingForm.querySelector('.name-hint');
         if (hint) hint.textContent = `${len} characters`;
+      });
+    }
+
+    // Populate event select when events are loaded (or later) — keep a reference
+    const eventSelect = bookingForm.querySelector('#booking-event-select');
+    if (eventSelect) {
+      // Wait for events to be loaded and then populate (a helper below sets window.__loadedEvents)
+      if (window.__loadedEvents) populateEventSelect(window.__loadedEvents, eventSelect);
+      else window.__populateSelect = (evs) => populateEventSelect(evs, eventSelect);
+    }
+
+    // When user clicks a book button on a card, preselect that event in the form
+    const eventsContainer = document.querySelector('#events-list');
+    if (eventsContainer) {
+      eventsContainer.addEventListener('click', (ev) => {
+        const bookBtn = ev.target.closest('.button');
+        if (!bookBtn) return;
+        const card = ev.target.closest('.event-card');
+        if (!card) return;
+        const id = card.dataset.id;
+        const sel = bookingForm.querySelector('[name="event"]');
+        if (sel) {
+          sel.value = id;
+          sel.dispatchEvent(new Event('change'));
+        }
+        // scroll to form for mobile/desktop
+        bookingForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
       });
     }
   }
@@ -137,29 +186,42 @@ document.addEventListener('DOMContentLoaded', () => {
         // Example: create a list of free events using filter()
         const freeEvents = events.filter(ev => ev.price === 'Free');
 
-        // Build HTML for all events using map()
+        // Build HTML for all events using map(), include new fields and badges
         const cardsHtml = events.map(ev => {
-          return `\n            <article class="card event-card" data-host="${escapeHtml(ev.host)}">\n              <div class="card-image">${ev.icon || '📅'}</div>\n              <p class="event-date">${escapeHtml(ev.date)}</p>\n              <h3>${escapeHtml(ev.title)}</h3>\n              <p>${escapeHtml(ev.location)} · Hosted by ${escapeHtml(ev.host)}</p>\n              <p class="price">${escapeHtml(ev.price)}</p>\n              <a class="button" href="#">Book Ticket</a>\n            </article>\n          `;
+          const tagsHtml = (ev.tags || []).map(t => `<span class="badge tag">${escapeHtml(t)}</span>`).join(' ');
+          const priceHtml = ev.price.toLowerCase() === 'free' ? `<span class="price">${escapeHtml(ev.price)} <span class="badge free">FREE</span></span>` : `<span class="price">${escapeHtml(ev.price)}</span>`;
+          return `\n            <article class="card event-card fade-in" data-host="${escapeHtml(ev.host)}" data-id="${ev.id}">\n              <div class="card-image">${ev.icon || '📅'}</div>\n              <p class="event-date">${escapeHtml(ev.date)}</p>\n              <h3>${escapeHtml(ev.title)} ${tagsHtml}</h3>\n              <p>${escapeHtml(ev.location)} · Hosted by ${escapeHtml(ev.host)}</p>\n              <p class="spots" data-spots="${Number(ev.spots_left || 0)}">${Number(ev.spots_left || 0)} left</p>\n              ${priceHtml}\n              <p style="margin-top:10px;"><a class="button" href="#">Book Ticket</a></p>\n            </article>\n          `;
         }).join('');
 
         eventsContainer.innerHTML = cardsHtml;
 
-        // Demonstrate forEach() - add a small badge to free events
+        // Demonstrate forEach() - style badges and small UI touches
         eventsContainer.querySelectorAll('.event-card').forEach(card => {
           const priceEl = card.querySelector('.price');
           if (priceEl && priceEl.textContent.trim().toLowerCase().includes('free')) {
-            const badge = document.createElement('div');
-            badge.textContent = 'FREE';
-            badge.style.background = '#2f855a';
-            badge.style.color = '#fff';
-            badge.style.display = 'inline-block';
-            badge.style.padding = '2px 6px';
-            badge.style.marginLeft = '8px';
-            badge.style.fontSize = '0.8rem';
-            badge.style.borderRadius = '4px';
-            priceEl.appendChild(badge);
+            // already has FREE badge in priceHtml; add pulse to draw attention
+            const freeBadge = priceEl.querySelector('.badge.free');
+            if (freeBadge) freeBadge.classList.add('pulse');
+            setTimeout(() => freeBadge && freeBadge.classList.remove('pulse'), 900);
+          }
+
+          // Add host badge after title
+          const host = card.dataset.host;
+          if (host) {
+            const h = card.querySelector('h3');
+            const hostBadge = document.createElement('span');
+            hostBadge.className = 'badge';
+            hostBadge.textContent = host;
+            h.appendChild(hostBadge);
           }
         });
+
+        // Make loaded events available to other handlers (e.g., populate booking select)
+        window.__loadedEvents = events;
+        if (typeof window.__populateSelect === 'function') window.__populateSelect(events);
+
+        // Example usage of the freeEvents array (logged)
+        console.info('Free events:', freeEvents.map(e => e.title));
 
         // Example usage of the freeEvents array (logged)
         console.info('Free events:', freeEvents.map(e => e.title));

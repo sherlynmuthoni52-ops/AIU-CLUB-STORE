@@ -234,3 +234,90 @@ a {
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================
+   UI polish: badges, animations, flashes
+   ============================================ */
+
+.badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
+  background: #4a5568;
+}
+
+.badge.tag {
+  background: #3182ce;
+  margin-right: 6px;
+}
+
+.badge.spots {
+  background: #dd6b20;
+}
+
+.badge.free {
+  background: #2f855a;
+}
+
+/* Flash message animation */
+.flash-message {
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 320ms ease, transform 320ms ease;
+}
+.flash-message.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Card hover and fade-in */
+.card {
+  transition: transform 250ms ease, box-shadow 250ms ease;
+}
+.card:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 8px 24px rgba(21,35,60,0.18);
+}
+
+.fade-in {
+  opacity: 0;
+  transform: translateY(6px);
+  animation: fadeInUp 420ms ease forwards;
+}
+
+@keyframes fadeInUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Pulsing effect for updated badges */
+.pulse {
+  animation: pulse 900ms ease;
+}
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+/* Field error style */
+.field-error {
+  margin-top: 6px;
+}
+
+input[type="text"], input[type="email"], input[type="number"], select {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+}
+
+/* Responsive tweaks for booking form */
+.booking-section .card {
+  display: block;
+}
+
+@media (max-width: 700px) {
+  .grid { gap: 14px; }
+}
