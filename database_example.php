@@ -3,7 +3,7 @@
 $host = 'localhost';
 $username = 'root';
 $password = '';
-$database = 'portfolio_db';
+$database = 'aiu_club_store';
 
 $connection = new mysqli($host, $username, $password, $database);
 
