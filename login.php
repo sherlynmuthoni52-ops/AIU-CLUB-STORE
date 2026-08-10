@@ -36,16 +36,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $page_title = 'Log in | AIU Club Store';
 require __DIR__ . '/includes/header.php';
 ?>
-<main class="container section form-page">
-  <h2>Log In</h2>
-  <?php if ($error) { ?>
-    <p class="error"><?php echo htmlspecialchars($error); ?></p>
-  <?php } ?>
-  <form method="post" class="form-card">
-    <label>Email<input name="email" type="email" required></label>
-    <label>Password<input name="password" type="password" required></label>
-    <button class="button">Log In</button>
-    <p>New student? <a class="text-link" href="register.php">Create an account</a>.</p>
-  </form>
-</main>
+<section class="container">
+    <?php if ($error) { ?>
+        <p class="error"><?php echo htmlspecialchars($error); ?></p>
+    <?php } ?>
+    <div class="login-container">
+        <div class="circle circle-one"></div>
+        <div class="form-container">
+            <img src="https://raw.githubusercontent.com/hicodersofficial/glassmorphism-login-form/master/assets/illustration.png" alt="illustration" class="illustration" />
+            <h1 class="opacity">LOGIN</h1>
+            <form method="post">
+                <input name="email" type="text" placeholder="USERNAME" />
+                <input name="password" type="password" placeholder="PASSWORD" />
+                <button class="opacity" type="submit">SUBMIT</button>
+            </form>
+            <div class="register-forget opacity">
+                <a href="register.php">REGISTER</a>
+                <a href="forgot.php">FORGOT PASSWORD</a>
+            </div>
+        </div>
+        <div class="circle circle-two"></div>
+    </div>
+    <div class="theme-btn-container"></div>
+</section>
 <?php require __DIR__ . '/includes/footer.php'; ?>
