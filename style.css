@@ -321,3 +321,9 @@ input[type="text"], input[type="email"], input[type="number"], select {
 @media (max-width: 700px) {
   .grid { gap: 14px; }
 }
+
+/* Apply to any grid container */
+.grid-container {
+  gap: 1rem;
+  -webkit-gap: 1rem;
+}
