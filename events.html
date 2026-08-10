@@ -28,20 +28,30 @@
     <!-- Booking form demo -->
     <section class="booking-section" style="margin-bottom:1rem;">
       <form id="booking-form" class="card" style="padding:12px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-        <label style="flex:1 1 200px;">
+        <label style="flex:1 1 220px;">
           Name:<br>
-          <input name="name" type="text" placeholder="Full name" required>
+          <input name="name" type="text" placeholder="Full name (e.g., Jane Doe)" required>
           <div class="name-hint" style="font-size:0.85rem;color:#666;margin-top:4px;"></div>
         </label>
-        <label style="flex:1 1 200px;">
+        <label style="flex:1 1 220px;">
           Email:<br>
           <input name="email" type="email" placeholder="you@example.com" required>
+        </label>
+        <label style="flex:1 1 160px;">
+          Phone:<br>
+          <input name="phone" type="text" placeholder="+2547XXXXXXXX" required>
+        </label>
+        <label style="width:160px;">
+          Event:<br>
+          <select name="event" id="booking-event-select">
+            <option value="">Select an event...</option>
+          </select>
         </label>
         <label style="width:120px;">
           Quantity:<br>
           <input name="qty" type="number" value="1" min="1" required>
         </label>
-        <button class="button" type="submit">Book (Demo)</button>
+        <button class="button" type="submit">Book Ticket</button>
       </form>
     </section>
 

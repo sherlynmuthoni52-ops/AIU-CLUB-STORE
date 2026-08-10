@@ -7,7 +7,9 @@
       "location": "Main Auditorium",
       "host": "Drama Club",
       "price": "KES 300",
-      "icon": "🎤"
+      "icon": "🎤",
+      "spots_left": 120,
+      "tags": ["performance", "music"]
     },
     {
       "id": 2,
@@ -16,7 +18,9 @@
       "location": "Innovation Lab",
       "host": "Tech Club",
       "price": "Free",
-      "icon": "💡"
+      "icon": "💡",
+      "spots_left": 48,
+      "tags": ["tech", "coding", "competition"]
     },
     {
       "id": 3,
@@ -25,7 +29,9 @@
       "location": "AIU Sports Ground",
       "host": "Sports Club",
       "price": "KES 150",
-      "icon": "🏆"
+      "icon": "🏆",
+      "spots_left": 250,
+      "tags": ["sports", "finals"]
     }
   ]
 }
