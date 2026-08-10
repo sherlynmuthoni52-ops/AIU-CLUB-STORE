@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Update cart count if present
-  const cartLink = document.querySelector('.nav-links a[href="cart.html"]');
+  const cartLink = document.querySelector('.nav-links a[href="cart.php"]');
   if (cartLink) {
     // extract number from text like "Cart (0)"
     const match = cartLink.textContent.match(/Cart\s*\((\d+)\)/);
