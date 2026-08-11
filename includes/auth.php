@@ -181,3 +181,22 @@ function pull_message(): ?string
 
     return $message;
 }
+
+/**
+ * Check whether a database table exists.
+ *
+ * @param mysqli $db The database connection.
+ * @param string $tableName The table name to check.
+ * @return bool True if the table exists, false otherwise.
+ */
+function table_exists(mysqli $db, string $tableName): bool
+{
+    $stmt = $db->prepare('SHOW TABLES LIKE ?');
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param('s', $tableName);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    return $result && $result->num_rows > 0;
+}

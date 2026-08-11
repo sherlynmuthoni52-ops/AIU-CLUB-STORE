@@ -31,7 +31,7 @@ foreach (['Products' => 'products', 'Events' => 'events', 'Orders' => 'orders', 
 // Club allocation overview for super admin.
 $clubAllocations = null;
 $unallocatedClubsCount = 0;
-if (current_user()['role'] === 'super_admin') {
+if (current_user()['role'] === 'super_admin' && table_exists($db, 'club_admins')) {
     $allocationsResult = $db->query(
         'SELECT club_admins.user_id, club_admins.club_id, users.name AS admin_name, clubs.name AS club_name
          FROM club_admins
