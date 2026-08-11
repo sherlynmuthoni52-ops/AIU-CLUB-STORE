@@ -32,16 +32,23 @@ foreach (['Products' => 'products', 'Events' => 'events', 'Orders' => 'orders', 
 $clubAllocations = null;
 $unallocatedClubsCount = 0;
 if (current_user()['role'] === 'super_admin') {
-    $clubAllocations = $db->query(
+    $allocationsResult = $db->query(
         'SELECT club_admins.user_id, club_admins.club_id, users.name AS admin_name, clubs.name AS club_name
          FROM club_admins
          JOIN users ON users.id = club_admins.user_id
          JOIN clubs ON clubs.id = club_admins.club_id
          ORDER BY clubs.name, users.name'
     );
-    $unallocatedClubsCount = (int) $db->query(
+    if ($allocationsResult && $allocationsResult->num_rows) {
+        $clubAllocations = $allocationsResult;
+    }
+
+    $unallocatedResult = $db->query(
         'SELECT COUNT(*) AS total FROM clubs LEFT JOIN club_admins ON club_admins.club_id = clubs.id WHERE club_admins.id IS NULL'
-    )->fetch_assoc()['total'];
+    );
+    if ($unallocatedResult) {
+        $unallocatedClubsCount = (int) $unallocatedResult->fetch_assoc()['total'];
+    }
 }
 
 // -----------------------------------------------------------------------------
