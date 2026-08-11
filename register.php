@@ -12,7 +12,13 @@ require_once __DIR__ . '/includes/auth.php';
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name = trim($_POST['name'] ?? '');
+    $name = '';
+    if (!empty($_POST['fName']) || !empty($_POST['lName'])) {
+        $name = trim($_POST['fName'] ?? '') . ' ' . trim($_POST['lName'] ?? '');
+    } else {
+        $name = trim($_POST['name'] ?? '');
+    }
+    $name = trim($name);
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
 
