@@ -46,7 +46,16 @@ require __DIR__ . '/includes/header.php';
     <?php if ($products && $products->num_rows) { while ($product = $products->fetch_assoc()) { ?>
       <article class="card">
         <div class="card-image">
-          <?php echo $product['image'] ? '<img src="uploads/' . htmlspecialchars($product['image']) . '" alt="' . htmlspecialchars($product['name']) . '">' : 'AIU'; ?>
+          <?php if ($product['image']): ?>
+            <div class="img-zoom">
+              <img src="uploads/<?php echo htmlspecialchars($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="img-thumb">
+              <div class="img-lens">
+                <img src="uploads/<?php echo htmlspecialchars($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="img-floating">
+              </div>
+            </div>
+          <?php else: ?>
+            AIU
+          <?php endif; ?>
         </div>
         <p class="muted">
           <?php echo htmlspecialchars($product['club_name']); ?> · <?php echo htmlspecialchars($product['category']); ?>
