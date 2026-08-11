@@ -89,16 +89,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Update a merchandise order.
     if ($type === 'order' && $id && in_array($paymentStatus, $allowedPayments, true) && in_array($orderStatus, $allowedOrders, true)) {
         if ($isSuperAdmin || order_belongs_to_managed_club($db, $id, $managedClubIds)) {
-            $stmt = $db->prepare('UPDATE orders SET payment_status=?, order_status=? WHERE id=?');
-            $stmt->bind_param('ssi', $paymentStatus, $orderStatus, $id);
-            $stmt->execute();
+            $stmt = $db->prepare('UPDATE orders SET payment_status = ?, order_status = ? WHERE id = ?');
+            if ($stmt) {
+                $stmt->bind_param('ssi', $paymentStatus, $orderStatus, $id);
+                $stmt->execute();
+                $stmt->close();
 
-            // Keep the payments table in sync.
-            $payment = $db->prepare('UPDATE payments SET status=? WHERE order_id=?');
-            $payment->bind_param('si', $paymentStatus, $id);
-            $payment->execute();
+                // Keep the payments table in sync.
+                $payment = $db->prepare('UPDATE payments SET status = ? WHERE order_id = ?');
+                if ($payment) {
+                    $payment->bind_param('si', $paymentStatus, $id);
+                    $payment->execute();
+                    $payment->close();
+                }
 
-            set_message('Order status updated.');
+                set_message('Order status updated.');
+                header('Location: admin_orders.php?saved=1');
+                exit;
+            } else {
+                set_message('Failed to prepare order update query.');
+            }
         } else {
             set_message('You can only update orders for your allocated club.');
         }
@@ -107,16 +117,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Update a ticket payment.
     if ($type === 'ticket' && $id && in_array($paymentStatus, $allowedPayments, true)) {
         if ($isSuperAdmin || ticket_belongs_to_managed_club($db, $id, $managedClubIds)) {
-            $stmt = $db->prepare('UPDATE tickets SET payment_status=? WHERE id=?');
-            $stmt->bind_param('si', $paymentStatus, $id);
-            $stmt->execute();
+            $stmt = $db->prepare('UPDATE tickets SET payment_status = ? WHERE id = ?');
+            if ($stmt) {
+                $stmt->bind_param('si', $paymentStatus, $id);
+                $stmt->execute();
+                $stmt->close();
 
-            // Keep the payments table in sync.
-            $payment = $db->prepare('UPDATE payments SET status=? WHERE ticket_id=?');
-            $payment->bind_param('si', $paymentStatus, $id);
-            $payment->execute();
+                // Keep the payments table in sync.
+                $payment = $db->prepare('UPDATE payments SET status = ? WHERE ticket_id = ?');
+                if ($payment) {
+                    $payment->bind_param('si', $paymentStatus, $id);
+                    $payment->execute();
+                    $payment->close();
+                }
 
-            set_message('Ticket payment status updated.');
+                set_message('Ticket payment status updated.');
+                header('Location: admin_orders.php?saved=1');
+                exit;
+            } else {
+                set_message('Failed to prepare ticket update query.');
+            }
         } else {
             set_message('You can only update tickets for your allocated club.');
         }
@@ -175,36 +195,38 @@ require __DIR__ . '/includes/header.php';
             </tr>
         </thead>
         <tbody>
-            <?php while ($order = $orders->fetch_assoc()) { ?>
+            <?php while ($order = $orders->fetch_assoc()) {
+                $formId = 'order-form-' . (int) $order['id'];
+            ?>
                 <tr>
-                    <form method="post">
-                        <input type="hidden" name="type" value="order">
-                        <input type="hidden" name="id" value="<?php echo $order['id']; ?>">
-                        <td>#<?php echo $order['id']; ?></td>
-                        <td><?php echo htmlspecialchars($order['student_name']); ?></td>
-                        <td>KES <?php echo number_format((float) $order['total_amount'], 2); ?></td>
-                        <td>
-                            <select name="payment_status">
-                                <?php foreach (['pending','paid','failed','refunded'] as $status) { ?>
-                                    <option <?php echo $order['payment_status'] === $status ? 'selected' : ''; ?>>
-                                        <?php echo $status; ?>
-                                    </option>
-                                <?php } ?>
-                            </select>
-                        </td>
-                        <td>
-                            <select name="order_status">
-                                <?php foreach (['pending','processing','ready','completed','cancelled'] as $status) { ?>
-                                    <option <?php echo $order['order_status'] === $status ? 'selected' : ''; ?>>
-                                        <?php echo $status; ?>
-                                    </option>
-                                <?php } ?>
-                            </select>
-                        </td>
-                        <td>
-                            <button class="button">Save</button>
-                        </td>
-                    </form>
+                    <td>#<?php echo $order['id']; ?></td>
+                    <td><?php echo htmlspecialchars($order['student_name']); ?></td>
+                    <td>KES <?php echo number_format((float) $order['total_amount'], 2); ?></td>
+                    <td>
+                        <select name="payment_status" form="<?php echo $formId; ?>">
+                            <?php foreach (['pending', 'paid', 'failed', 'refunded'] as $status) { ?>
+                                <option value="<?php echo $status; ?>" <?php echo $order['payment_status'] === $status ? 'selected' : ''; ?>>
+                                    <?php echo $status; ?>
+                                </option>
+                            <?php } ?>
+                        </select>
+                    </td>
+                    <td>
+                        <select name="order_status" form="<?php echo $formId; ?>">
+                            <?php foreach (['pending', 'processing', 'ready', 'completed', 'cancelled'] as $status) { ?>
+                                <option value="<?php echo $status; ?>" <?php echo $order['order_status'] === $status ? 'selected' : ''; ?>>
+                                    <?php echo $status; ?>
+                                </option>
+                            <?php } ?>
+                        </select>
+                    </td>
+                    <td>
+                        <form id="<?php echo $formId; ?>" method="post" style="display:inline;">
+                            <input type="hidden" name="type" value="order">
+                            <input type="hidden" name="id" value="<?php echo $order['id']; ?>">
+                            <button type="submit" class="button">Save</button>
+                        </form>
+                    </td>
                 </tr>
             <?php } ?>
         </tbody>
@@ -224,33 +246,44 @@ require __DIR__ . '/includes/header.php';
             </tr>
         </thead>
         <tbody>
-            <?php while ($ticket = $tickets->fetch_assoc()) { ?>
+            <?php while ($ticket = $tickets->fetch_assoc()) {
+                $formId = 'ticket-form-' . (int) $ticket['id'];
+            ?>
                 <tr>
-                    <form method="post">
-                        <input type="hidden" name="type" value="ticket">
-                        <input type="hidden" name="id" value="<?php echo $ticket['id']; ?>">
-                        <td><?php echo htmlspecialchars($ticket['event_title']); ?></td>
-                        <td><?php echo htmlspecialchars($ticket['student_name']); ?></td>
-                        <td><?php echo htmlspecialchars($ticket['ticket_code']); ?></td>
-                        <td>
-                            <select name="payment_status">
-                                <?php foreach (['pending','paid','failed','refunded'] as $status) { ?>
-                                    <option <?php echo $ticket['payment_status'] === $status ? 'selected' : ''; ?>>
-                                        <?php echo $status; ?>
-                                    </option>
-                                <?php } ?>
-                            </select>
-                        </td>
-                        <td>
-                            <?php echo $ticket['checked_in'] ? 'Yes' : 'No'; ?>
-                        </td>
-                        <td>
-                            <button class="button">Save</button>
-                        </td>
-                    </form>
+                    <td><?php echo htmlspecialchars($ticket['event_title']); ?></td>
+                    <td><?php echo htmlspecialchars($ticket['student_name']); ?></td>
+                    <td><?php echo htmlspecialchars($ticket['ticket_code']); ?></td>
+                    <td>
+                        <select name="payment_status" form="<?php echo $formId; ?>">
+                            <?php foreach (['pending', 'paid', 'failed', 'refunded'] as $status) { ?>
+                                <option value="<?php echo $status; ?>" <?php echo $ticket['payment_status'] === $status ? 'selected' : ''; ?>>
+                                    <?php echo $status; ?>
+                                </option>
+                            <?php } ?>
+                        </select>
+                    </td>
+                    <td>
+                        <?php echo $ticket['checked_in'] ? 'Yes' : 'No'; ?>
+                    </td>
+                    <td>
+                        <form id="<?php echo $formId; ?>" method="post" style="display:inline;">
+                            <input type="hidden" name="type" value="ticket">
+                            <input type="hidden" name="id" value="<?php echo $ticket['id']; ?>">
+                            <button type="submit" class="button">Save</button>
+                        </form>
+                    </td>
                 </tr>
             <?php } ?>
         </tbody>
     </table>
 </main>
+<script>
+    // Pop-up confirmation when redirected after a successful save.
+    if (new URLSearchParams(window.location.search).has('saved')) {
+        alert('Changes saved successfully!');
+        var url = new URL(window.location);
+        url.searchParams.delete('saved');
+        window.history.replaceState({}, '', url);
+    }
+</script>
 <?php require __DIR__ . '/includes/footer.php'; ?>
