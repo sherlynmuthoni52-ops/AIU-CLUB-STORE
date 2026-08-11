@@ -148,7 +148,10 @@ require __DIR__ . '/includes/header.php';
     <p>Assign club administrators to clubs. Each club admin manages their allocated club(s).</p>
 
     <?php if (!table_exists($db, 'club_admins')) { ?>
-        <p class="flash" style="background:#e53e3e;">The <strong>club_admins</strong> table does not exist yet. Please import the updated <strong>database.sql</strong> in phpMyAdmin to enable club allocations.</p>
+        <p class="flash" style="background:#e53e3e;">
+            The <strong>club_admins</strong> table does not exist yet.
+            <a class="button" href="setup_database.php" style="margin-left:12px; background:#fff; color:#e53e3e;">Run Database Setup</a>
+        </p>
     <?php } ?>
 
     <!-- Allocate Club Admin -->
