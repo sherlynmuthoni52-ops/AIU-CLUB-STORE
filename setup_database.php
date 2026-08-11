@@ -9,22 +9,23 @@
  * Usage: http://localhost/aiu-club-store/setup_database.php
  */
 
-require_once __DIR__ . '/config/database.php';
+// Direct database connection for setup (bypasses app config if DB doesn't exist yet).
+$db = new mysqli('localhost', 'root', '', '');
+if ($db->connect_error) {
+    exit('Database connection failed: ' . htmlspecialchars($db->connect_error));
+}
 
-$db = database();
 $messages = [];
 
 // Ensure database exists with correct charset.
 $db->query('CREATE DATABASE IF NOT EXISTS aiu_club_store CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
 $db->select_db('aiu_club_store');
 
-// Helper: check table existence.
+// Helper: check table existence using direct query.
 function table_exists(mysqli $db, string $name): bool
 {
-    $stmt = $db->prepare('SHOW TABLES LIKE ?');
-    $stmt->bind_param('s', $name);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $name = $db->real_escape_string($name);
+    $result = $db->query("SHOW TABLES LIKE '{$name}'");
     return $result && $result->num_rows > 0;
 }
 
@@ -324,9 +325,7 @@ foreach ($expectedTables as $table) {
         <?php if ($allTablesExist) { ?>
             <div class="success">
                 <strong>✔ Setup complete!</strong> All tables are created and verified.
-                <?php if ($allocationsCount === 0) { ?>
-                    <p>You can now log in as <strong>super@aiu.edu</strong> / <strong>password123</strong> and allocate clubs to admins.</p>
-                <?php } ?>
+                <p>You can now log in as <strong>super@aiu.edu</strong> / <strong>password123</strong> and allocate clubs to admins.</p>
                 <a class="back" href="admin.php">&larr; Go to Admin Dashboard</a>
             </div>
         <?php } else { ?>
