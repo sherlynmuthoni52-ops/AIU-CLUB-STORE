@@ -4,6 +4,7 @@
  *
  * Allows administrators to add, edit, and delete products.
  * Each product can optionally have sizes managed via admin_sizes.php.
+ * Club administrators can only manage products for their allocated club.
  */
 
 // -----------------------------------------------------------------------------
@@ -15,6 +16,10 @@ require_once __DIR__ . '/includes/auth.php';
 require_admin();
 
 $db = database();
+$user = current_user();
+$managedClubIds = managed_club_ids();
+$isSuperAdmin = $user['role'] === 'super_admin';
+$managedCondition = managed_club_condition();
 
 // -----------------------------------------------------------------------------
 // Handle Form Submissions
@@ -34,6 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (!$clubId || !$name || $price === false || $price < 0 || $stock === false || $stock < 0 || !$category) {
             set_message('Please complete all product fields with valid values.');
+        } elseif (!in_array($clubId, $managedClubIds, true)) {
+            set_message('You can only manage products for your allocated club.');
         } elseif ($id) {
             // Update an existing product.
             $stmt = $db->prepare('UPDATE products SET club_id=?, name=?, price=?, stock=?, category=? WHERE id=?');
@@ -53,11 +60,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'delete') {
         $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
         if ($id) {
-            try {
-                $db->query('DELETE FROM products WHERE id=' . (int) $id);
-                set_message('Product deleted.');
-            } catch (Throwable $e) {
-                set_message('This product cannot be deleted because it is used in an order.');
+            // Verify the product belongs to a managed club.
+            $product = $db->query('SELECT club_id FROM products WHERE id=' . (int) $id)->fetch_assoc();
+            if ($product && in_array((int) $product['club_id'], $managedClubIds, true)) {
+                try {
+                    $db->query('DELETE FROM products WHERE id=' . (int) $id);
+                    set_message('Product deleted.');
+                } catch (Throwable $e) {
+                    set_message('This product cannot be deleted because it is used in an order.');
+                }
+            } else {
+                set_message('You can only delete products from your allocated club.');
             }
         }
     }
@@ -74,10 +87,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $editing = null;
 if ($id = filter_input(INPUT_GET, 'edit', FILTER_VALIDATE_INT)) {
     $editing = $db->query('SELECT * FROM products WHERE id=' . (int) $id)->fetch_assoc();
+    if ($editing && !in_array((int) $editing['club_id'], $managedClubIds, true)) {
+        $editing = null;
+    }
 }
 
-$clubs = $db->query('SELECT id, name FROM clubs ORDER BY name');
-$products = $db->query('SELECT products.*, clubs.name AS club_name FROM products JOIN clubs ON clubs.id = products.club_id ORDER BY products.id DESC');
+$clubsQuery = 'SELECT id, name FROM clubs';
+if (!$isSuperAdmin) {
+    $clubsQuery .= ' WHERE id IN (' . implode(',', array_map('intval', $managedClubIds)) . ')';
+}
+$clubsQuery .= ' ORDER BY name';
+$clubs = $db->query($clubsQuery);
+
+$productsQuery = 'SELECT products.*, clubs.name AS club_name FROM products JOIN clubs ON clubs.id = products.club_id WHERE ' . $managedCondition . ' ORDER BY products.id DESC';
+$products = $db->query($productsQuery);
 
 // -----------------------------------------------------------------------------
 // Render Page
@@ -98,13 +121,16 @@ require __DIR__ . '/includes/header.php';
         <input type="hidden" name="id" value="<?php echo (int) ($editing['id'] ?? 0); ?>">
         <label>
             Club
-            <select name="club_id" required>
+            <select name="club_id" required <?php echo !$isSuperAdmin ? 'disabled' : ''; ?>>
                 <?php while ($club = $clubs->fetch_assoc()) { ?>
                     <option value="<?php echo $club['id']; ?>" <?php echo (($editing['club_id'] ?? 0) == $club['id']) ? 'selected' : ''; ?>>
                         <?php echo htmlspecialchars($club['name']); ?>
                     </option>
                 <?php } ?>
             </select>
+            <?php if (!$isSuperAdmin) { ?>
+                <input type="hidden" name="club_id" value="<?php echo (int) ($editing['club_id'] ?? $managedClubIds[0] ?? 0); ?>">
+            <?php } ?>
         </label>
         <label>
             Product name
@@ -149,10 +175,10 @@ require __DIR__ . '/includes/header.php';
                     <td>
                         <a class="text-link" href="admin_products.php?edit=<?php echo $product['id']; ?>">Edit</a>
                         <a class="text-link" href="admin_sizes.php?product_id=<?php echo $product['id']; ?>">Sizes</a>
-                        <form method="post">
+                        <form method="post" style="display:inline;" onsubmit="return confirm('Delete this product?');">
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="id" value="<?php echo $product['id']; ?>">
-                            <button class="text-link" onclick="return confirm('Delete this product?')">Delete</button>
+                            <button class="text-link">Delete</button>
                         </form>
                     </td>
                 </tr>

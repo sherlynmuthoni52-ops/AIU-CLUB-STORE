@@ -37,6 +37,24 @@ a {
 }
 
 /* ============================================
+   Welcome Banner
+   ============================================ */
+.welcome-banner {
+  background: var(--blue);
+  color: #fff;
+  padding: 10px 7%;
+  text-align: center;
+  font-size: 0.95rem;
+}
+.welcome-banner .user-name {
+  font-weight: 700;
+}
+.welcome-banner .user-role {
+  text-transform: capitalize;
+  opacity: 0.9;
+}
+
+/* ============================================
    Navigation Bar
    ============================================ */
 .navbar {

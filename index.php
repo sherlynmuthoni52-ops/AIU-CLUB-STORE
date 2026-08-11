@@ -14,7 +14,7 @@ require __DIR__ . '/includes/header.php';
 ?>
 <header class="hero">
   <?php if (is_logged_in()) { ?>
-    <h1>Welcome back, <?php echo htmlspecialchars(current_user()['name']); ?>!</h1>
+    <h1>Welcome back!</h1>
     <p>Ready to explore the latest clubs, merchandise, and events?</p>
   <?php } else { ?>
     <h1>Wear Your Club. Join the Moment.</h1>

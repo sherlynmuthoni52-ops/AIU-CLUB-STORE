@@ -85,6 +85,13 @@ if ($id = filter_input(INPUT_GET, 'edit', FILTER_VALIDATE_INT)) {
 // Fetch all clubs for the list table.
 $clubs = $db->query('SELECT * FROM clubs ORDER BY name');
 
+// Fetch club admin counts.
+$adminCounts = [];
+$result = $db->query('SELECT club_id, COUNT(*) AS count FROM club_admins GROUP BY club_id');
+while ($row = $result->fetch_assoc()) {
+    $adminCounts[$row['club_id']] = (int) $row['count'];
+}
+
 // -----------------------------------------------------------------------------
 // Render Page
 // -----------------------------------------------------------------------------
@@ -120,6 +127,7 @@ require __DIR__ . '/includes/header.php';
             <tr>
                 <th>Name</th>
                 <th>Description</th>
+                <th>Admins</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -128,6 +136,10 @@ require __DIR__ . '/includes/header.php';
                 <tr>
                     <td><?php echo htmlspecialchars($club['name']); ?></td>
                     <td><?php echo htmlspecialchars($club['description']); ?></td>
+                    <td>
+                        <?php echo $adminCounts[$club['id']] ?? 0; ?>
+                        <a class="text-link" href="admin_club_allocations.php">Manage</a>
+                    </td>
                     <td>
                         <a class="text-link" href="admin_clubs.php?edit=<?php echo $club['id']; ?>">Edit</a>
                         <form method="post">

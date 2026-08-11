@@ -71,6 +71,89 @@ function require_admin(): void
 }
 
 /**
+ * Get the IDs of clubs managed by the current user.
+ * For super_admin, returns all club IDs.
+ * For club_admin, returns their allocated club IDs.
+ * For student, returns an empty array.
+ *
+ * @return int[] Array of club IDs.
+ */
+function managed_club_ids(): array
+{
+    $user = current_user();
+    if (!$user) {
+        return [];
+    }
+
+    $db = database();
+
+    if ($user['role'] === 'super_admin') {
+        $result = $db->query('SELECT id FROM clubs');
+        return $result ? array_column($result->fetch_all(MYSQLI_ASSOC), 'id') : [];
+    }
+
+    if ($user['role'] === 'club_admin') {
+        $stmt = $db->prepare('SELECT club_id FROM club_admins WHERE user_id = ?');
+        $stmt->bind_param('i', $user['id']);
+        $stmt->execute();
+        $result = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        return array_column($result, 'club_id');
+    }
+
+    return [];
+}
+
+/**
+ * Get a SQL condition string for filtering by managed clubs.
+ * Returns "club_id IN (...)" or "1=1" (for super_admin or empty list).
+ *
+ * @return string SQL condition fragment.
+ */
+function managed_club_condition(): string
+{
+    $user = current_user();
+    if (!$user || $user['role'] === 'student') {
+        return '1=0';
+    }
+
+    $clubIds = managed_club_ids();
+
+    if ($user['role'] === 'super_admin') {
+        return '1=1';
+    }
+
+    if (empty($clubIds)) {
+        return '1=0';
+    }
+
+    return 'club_id IN (' . implode(',', array_map('intval', $clubIds)) . ')';
+}
+
+/**
+ * Check whether the current club_admin manages a specific club.
+ *
+ * @param int $clubId The club ID to check.
+ * @return bool True if the current user manages the club or is super_admin.
+ */
+function manages_club(int $clubId): bool
+{
+    $user = current_user();
+    if (!$user) {
+        return false;
+    }
+
+    if ($user['role'] === 'super_admin') {
+        return true;
+    }
+
+    $db = database();
+    $stmt = $db->prepare('SELECT id FROM club_admins WHERE user_id = ? AND club_id = ? LIMIT 1');
+    $stmt->bind_param('ii', $user['id'], $clubId);
+    $stmt->execute();
+    return (bool) $stmt->get_result()->fetch_assoc();
+}
+
+/**
  * Store a temporary flash message in the session.
  *
  * @param string $message The message text to display.

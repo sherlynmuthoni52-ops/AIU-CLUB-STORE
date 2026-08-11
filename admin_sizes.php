@@ -4,6 +4,7 @@
  *
  * Allows administrators to add and update size-specific stock levels
  * for a given product (e.g., S, M, L, XL).
+ * Club administrators can only manage sizes for products in their allocated club.
  */
 
 // -----------------------------------------------------------------------------
@@ -15,6 +16,9 @@ require_once __DIR__ . '/includes/auth.php';
 require_admin();
 
 $db = database();
+$user = current_user();
+$managedClubIds = managed_club_ids();
+$isSuperAdmin = $user['role'] === 'super_admin';
 
 // -----------------------------------------------------------------------------
 // Load Product
@@ -27,6 +31,15 @@ if (!$product) {
     set_message('Choose a valid product first.');
     header('Location: admin_products.php');
     exit;
+}
+
+if (!$isSuperAdmin) {
+    $productClub = $db->query('SELECT club_id FROM products WHERE id=' . (int) $productId)->fetch_assoc();
+    if (!$productClub || !in_array((int) $productClub['club_id'], $managedClubIds, true)) {
+        set_message('You can only manage sizes for products in your allocated club.');
+        header('Location: admin_products.php');
+        exit;
+    }
 }
 
 // -----------------------------------------------------------------------------

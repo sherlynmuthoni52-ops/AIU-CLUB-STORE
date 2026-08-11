@@ -28,6 +28,22 @@ foreach (['Products' => 'products', 'Events' => 'events', 'Orders' => 'orders', 
     $counts[$label] = (int) $db->query("SELECT COUNT(*) AS total FROM $table")->fetch_assoc()['total'];
 }
 
+// Club allocation overview for super admin.
+$clubAllocations = null;
+$unallocatedClubsCount = 0;
+if (current_user()['role'] === 'super_admin') {
+    $clubAllocations = $db->query(
+        'SELECT club_admins.user_id, club_admins.club_id, users.name AS admin_name, clubs.name AS club_name
+         FROM club_admins
+         JOIN users ON users.id = club_admins.user_id
+         JOIN clubs ON clubs.id = club_admins.club_id
+         ORDER BY clubs.name, users.name'
+    );
+    $unallocatedClubsCount = (int) $db->query(
+        'SELECT COUNT(*) AS total FROM clubs LEFT JOIN club_admins ON club_admins.club_id = clubs.id WHERE club_admins.id IS NULL'
+    )->fetch_assoc()['total'];
+}
+
 // -----------------------------------------------------------------------------
 // Render Page
 // -----------------------------------------------------------------------------
@@ -51,6 +67,43 @@ require __DIR__ . '/includes/header.php';
             </article>
         <?php } ?>
     </div>
+
+    <!-- Club Allocation Overview (Super Admin Only) -->
+    <?php if (current_user()['role'] === 'super_admin') { ?>
+        <h3>Club Allocations</h3>
+        <p>
+            <a class="button" href="admin_club_allocations.php">Manage Allocations</a>
+        </p>
+        <div class="grid">
+            <article class="card">
+                <h3>Allocated Clubs</h3>
+                <p class="price"><?php echo $clubAllocations ? $clubAllocations->num_rows : 0; ?></p>
+            </article>
+            <article class="card">
+                <h3>Unallocated Clubs</h3>
+                <p class="price"><?php echo $unallocatedClubsCount; ?></p>
+            </article>
+        </div>
+        <?php if ($clubAllocations && $clubAllocations->num_rows) { ?>
+            <h4>Current Allocations</h4>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Admin</th>
+                        <th>Club</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while ($alloc = $clubAllocations->fetch_assoc()) { ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($alloc['admin_name']); ?></td>
+                            <td><?php echo htmlspecialchars($alloc['club_name']); ?></td>
+                        </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
+        <?php } ?>
+    <?php } ?>
 
     <!-- Admin Management Links -->
     <h3>Management</h3>

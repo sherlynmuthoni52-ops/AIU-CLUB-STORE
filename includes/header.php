@@ -9,6 +9,12 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
+  <?php if (is_logged_in()) { ?>
+    <div class="welcome-banner">
+      Welcome back, <span class="user-name"><?php echo htmlspecialchars(current_user()['name']); ?></span>!
+      Role: <span class="user-role"><?php echo htmlspecialchars(current_user()['role']); ?></span>
+    </div>
+  <?php } ?>
   <nav class="navbar">
     <a class="brand" href="index.php">AIU CLUB STORE</a>
     <div class="nav-links">

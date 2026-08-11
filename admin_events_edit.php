@@ -4,6 +4,7 @@
  *
  * Allows administrators to update an existing event's details.
  * Redirects back to the events list if the event is not found.
+ * Club administrators can only edit events for their allocated club.
  */
 
 // -----------------------------------------------------------------------------
@@ -15,6 +16,9 @@ require_once __DIR__ . '/includes/auth.php';
 require_admin();
 
 $db = database();
+$user = current_user();
+$managedClubIds = managed_club_ids();
+$isSuperAdmin = $user['role'] === 'super_admin';
 
 // -----------------------------------------------------------------------------
 // Load Event Data
@@ -25,6 +29,12 @@ $event = $id ? $db->query('SELECT * FROM events WHERE id=' . (int) $id)->fetch_a
 
 if (!$event) {
     set_message('Event not found.');
+    header('Location: admin_events.php');
+    exit;
+}
+
+if (!$isSuperAdmin && !in_array((int) $event['club_id'], $managedClubIds, true)) {
+    set_message('You can only edit events for your allocated club.');
     header('Location: admin_events.php');
     exit;
 }
@@ -44,6 +54,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!$clubId || !$title || !$venue || !$date || !$capacity || $capacity < 1 || $price === false || $price < 0) {
         set_message('Complete all required fields.');
+    } elseif (!in_array($clubId, $managedClubIds, true)) {
+        set_message('You can only manage events for your allocated club.');
     } else {
         $stmt = $db->prepare('UPDATE events SET club_id=?, title=?, description=?, venue=?, `date`=?, capacity=?, ticket_price=? WHERE id=?');
         $stmt->bind_param('issssidi', $clubId, $title, $description, $venue, $date, $capacity, $price, $id);
@@ -58,7 +70,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Prepare Data for Display
 // -----------------------------------------------------------------------------
 
-$clubs = $db->query('SELECT id, name FROM clubs ORDER BY name');
+$clubsQuery = 'SELECT id, name FROM clubs';
+if (!$isSuperAdmin) {
+    $clubsQuery .= ' WHERE id IN (' . implode(',', array_map('intval', $managedClubIds)) . ')';
+}
+$clubsQuery .= ' ORDER BY name';
+$clubs = $db->query($clubsQuery);
 
 // -----------------------------------------------------------------------------
 // Render Page
@@ -77,13 +94,16 @@ require __DIR__ . '/includes/header.php';
     <form method="post" class="form-card">
         <label>
             Club
-            <select name="club_id">
+            <select name="club_id" required <?php echo !$isSuperAdmin ? 'disabled' : ''; ?>>
                 <?php while ($club = $clubs->fetch_assoc()) { ?>
                     <option value="<?php echo $club['id']; ?>" <?php echo $event['club_id'] == $club['id'] ? 'selected' : ''; ?>>
                         <?php echo htmlspecialchars($club['name']); ?>
                     </option>
                 <?php } ?>
             </select>
+            <?php if (!$isSuperAdmin) { ?>
+                <input type="hidden" name="club_id" value="<?php echo (int) $event['club_id']; ?>">
+            <?php } ?>
         </label>
         <label>
             Title

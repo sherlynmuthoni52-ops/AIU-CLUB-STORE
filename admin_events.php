@@ -4,6 +4,7 @@
  *
  * Allows administrators to add and delete club events.
  * Event editing is handled by admin_events_edit.php.
+ * Club administrators can only manage events for their allocated club.
  */
 
 // -----------------------------------------------------------------------------
@@ -15,6 +16,10 @@ require_once __DIR__ . '/includes/auth.php';
 require_admin();
 
 $db = database();
+$user = current_user();
+$managedClubIds = managed_club_ids();
+$isSuperAdmin = $user['role'] === 'super_admin';
+$managedCondition = managed_club_condition();
 
 // -----------------------------------------------------------------------------
 // Handle Form Submissions
@@ -36,6 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (!$clubId || !$title || !$venue || !$date || !$capacity || $capacity < 1 || $price === false || $price < 0) {
             set_message('Complete all required event fields.');
+        } elseif (!in_array($clubId, $managedClubIds, true)) {
+            set_message('You can only manage events for your allocated club.');
         } elseif ($id) {
             // Update an existing event.
             $stmt = $db->prepare('UPDATE events SET club_id=?, title=?, description=?, venue=?, `date`=?, capacity=?, ticket_price=? WHERE id=?');
@@ -55,11 +62,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'delete') {
         $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
         if ($id) {
-            try {
-                $db->query('DELETE FROM events WHERE id=' . (int) $id);
-                set_message('Event deleted.');
-            } catch (Throwable $e) {
-                set_message('This event has tickets and cannot be deleted.');
+            $event = $db->query('SELECT club_id FROM events WHERE id=' . (int) $id)->fetch_assoc();
+            if ($event && in_array((int) $event['club_id'], $managedClubIds, true)) {
+                try {
+                    $db->query('DELETE FROM events WHERE id=' . (int) $id);
+                    set_message('Event deleted.');
+                } catch (Throwable $e) {
+                    set_message('This event has tickets and cannot be deleted.');
+                }
+            } else {
+                set_message('You can only delete events from your allocated club.');
             }
         }
     }
@@ -72,8 +84,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Prepare Data for Display
 // -----------------------------------------------------------------------------
 
-$clubs = $db->query('SELECT id, name FROM clubs ORDER BY name');
-$events = $db->query('SELECT events.*, clubs.name AS club_name FROM events JOIN clubs ON clubs.id = events.club_id ORDER BY `date` DESC');
+$clubsQuery = 'SELECT id, name FROM clubs';
+if (!$isSuperAdmin) {
+    $clubsQuery .= ' WHERE id IN (' . implode(',', array_map('intval', $managedClubIds)) . ')';
+}
+$clubsQuery .= ' ORDER BY name';
+$clubs = $db->query($clubsQuery);
+
+$eventsQuery = 'SELECT events.*, clubs.name AS club_name FROM events JOIN clubs ON clubs.id = events.club_id WHERE ' . $managedCondition . ' ORDER BY `date` DESC';
+$events = $db->query($eventsQuery);
 
 // -----------------------------------------------------------------------------
 // Render Page
@@ -93,13 +112,16 @@ require __DIR__ . '/includes/header.php';
         <input type="hidden" name="action" value="save">
         <label>
             Club
-            <select name="club_id">
+            <select name="club_id" required <?php echo !$isSuperAdmin ? 'disabled' : ''; ?>>
                 <?php while ($club = $clubs->fetch_assoc()) { ?>
                     <option value="<?php echo $club['id']; ?>">
                         <?php echo htmlspecialchars($club['name']); ?>
                     </option>
                 <?php } ?>
             </select>
+            <?php if (!$isSuperAdmin) { ?>
+                <input type="hidden" name="club_id" value="<?php echo (int) ($managedClubIds[0] ?? 0); ?>">
+            <?php } ?>
         </label>
         <label>
             Title
@@ -153,10 +175,10 @@ require __DIR__ . '/includes/header.php';
                     <td><?php echo $event['capacity']; ?></td>
                     <td>
                         <a class="text-link" href="admin_events_edit.php?id=<?php echo $event['id']; ?>">Edit</a>
-                        <form method="post">
+                        <form method="post" style="display:inline;" onsubmit="return confirm('Delete this event?');">
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="id" value="<?php echo $event['id']; ?>">
-                            <button class="text-link" onclick="return confirm('Delete this event?')">Delete</button>
+                            <button class="text-link">Delete</button>
                         </form>
                     </td>
                 </tr>

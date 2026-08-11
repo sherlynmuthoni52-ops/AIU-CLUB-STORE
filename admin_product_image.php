@@ -5,6 +5,7 @@
  * Allows administrators to upload and assign images to products.
  * Supported formats: JPG, PNG, WebP.
  * Maximum file size: 2 MB.
+ * Club administrators can only upload images for products in their allocated club.
  */
 
 // -----------------------------------------------------------------------------
@@ -16,6 +17,10 @@ require_once __DIR__ . '/includes/auth.php';
 require_admin();
 
 $db = database();
+$user = current_user();
+$managedClubIds = managed_club_ids();
+$isSuperAdmin = $user['role'] === 'super_admin';
+$managedCondition = managed_club_condition();
 
 // -----------------------------------------------------------------------------
 // Handle Image Upload
@@ -42,17 +47,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 mkdir($folder, 0755, true);
             }
 
-            // Generate a unique filename to avoid collisions.
-            $filename = 'product-' . bin2hex(random_bytes(8)) . '.' . $allowedTypes[$mime];
-            $destinationPath = $folder . '/' . $filename;
-
-            if (move_uploaded_file($file['tmp_name'], $destinationPath)) {
-                $stmt = $db->prepare('UPDATE products SET image=? WHERE id=?');
-                $stmt->bind_param('si', $filename, $productId);
-                $stmt->execute();
-                set_message('Product image uploaded successfully.');
+            // Verify product belongs to managed club.
+            $product = $db->query('SELECT club_id FROM products WHERE id=' . (int) $productId)->fetch_assoc();
+            if (!$product || (!$isSuperAdmin && !in_array((int) $product['club_id'], $managedClubIds, true))) {
+                set_message('You can only upload images for products in your allocated club.');
             } else {
-                set_message('The image could not be saved.');
+                // Generate a unique filename to avoid collisions.
+                $filename = 'product-' . bin2hex(random_bytes(8)) . '.' . $allowedTypes[$mime];
+                $destinationPath = $folder . '/' . $filename;
+
+                if (move_uploaded_file($file['tmp_name'], $destinationPath)) {
+                    $stmt = $db->prepare('UPDATE products SET image=? WHERE id=?');
+                    $stmt->bind_param('si', $filename, $productId);
+                    $stmt->execute();
+                    set_message('Product image uploaded successfully.');
+                } else {
+                    set_message('The image could not be saved.');
+                }
             }
         }
     }
@@ -65,7 +76,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Prepare Data for Display
 // -----------------------------------------------------------------------------
 
-$products = $db->query('SELECT id, name, image FROM products ORDER BY name');
+$productsQuery = 'SELECT id, name, image FROM products';
+if (!$isSuperAdmin) {
+    $productsQuery .= ' WHERE ' . $managedCondition;
+}
+$productsQuery .= ' ORDER BY name';
+$products = $db->query($productsQuery);
 
 // -----------------------------------------------------------------------------
 // Render Page

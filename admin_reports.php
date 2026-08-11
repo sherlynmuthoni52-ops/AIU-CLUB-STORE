@@ -4,6 +4,7 @@
  *
  * Displays merchandise sales totals, order counts, event attendance
  * statistics, and best-selling products.
+ * Club administrators see reports only for their allocated club.
  */
 
 // -----------------------------------------------------------------------------
@@ -15,32 +16,39 @@ require_once __DIR__ . '/includes/auth.php';
 require_admin();
 
 $db = database();
+$user = current_user();
+$managedClubIds = managed_club_ids();
+$isSuperAdmin = $user['role'] === 'super_admin';
+$managedCondition = managed_club_condition();
 
 // -----------------------------------------------------------------------------
 // Fetch Report Data
 // -----------------------------------------------------------------------------
 
-// Total paid merchandise sales and order count.
+// Total paid merchandise sales and order count for managed clubs.
 $sales = $db->query(
     "SELECT COALESCE(SUM(total_amount), 0) AS total, COUNT(*) AS orders
      FROM orders
-     WHERE payment_status = 'paid'"
+     WHERE payment_status = 'paid'
+     AND " . ($isSuperAdmin ? '1=1' : 'EXISTS (SELECT 1 FROM order_items JOIN products ON products.id = order_items.product_id WHERE order_items.order_id = orders.id AND ' . $managedCondition . ')')
 )->fetch_assoc();
 
-// Event attendance breakdown: capacity vs. reserved vs. checked-in.
+// Event attendance breakdown for managed clubs.
 $eventStats = $db->query(
     'SELECT events.title, events.capacity, COUNT(tickets.id) AS reserved, COALESCE(SUM(tickets.checked_in), 0) AS attended
      FROM events
      LEFT JOIN tickets ON tickets.event_id = events.id
+     WHERE ' . $managedCondition . '
      GROUP BY events.id
      ORDER BY events.`date` DESC'
 );
 
-// Top 5 best-selling products by quantity sold.
+// Top 5 best-selling products for managed clubs.
 $bestProducts = $db->query(
     'SELECT products.name, COALESCE(SUM(order_items.quantity), 0) AS sold
      FROM products
      LEFT JOIN order_items ON order_items.product_id = products.id
+     WHERE ' . $managedCondition . '
      GROUP BY products.id
      ORDER BY sold DESC
      LIMIT 5'
