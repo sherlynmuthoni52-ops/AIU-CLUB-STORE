@@ -332,7 +332,7 @@ input[type="text"], input[type="email"], input[type="number"], select {
    Authentication Page Styles
    ============================================ */
 .auth-container {
-  background: #fff;
+  background: #ffe6e6;
   width: 450px;
   max-width: 90%;
   padding: 1.5rem;

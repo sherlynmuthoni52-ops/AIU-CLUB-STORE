@@ -76,16 +76,8 @@ require __DIR__ . '/includes/header.php';
         <input type="password" name="password" id="signin-password" placeholder="Password" required>
         <label for="signin-password">Password</label>
       </div>
-      <p class="recover">
-        <a href="#">Recover Password</a>
-      </p>
       <input type="submit" class="btn" value="Sign In" name="signIn">
     </form>
-    <p class="or">----------or--------</p>
-    <div class="icons">
-      <i class="fab fa-google"></i>
-      <i class="fab fa-facebook"></i>
-    </div>
     <div class="links">
       <p>Don't have account yet?</p>
       <button type="button" id="signUpButton">Sign Up</button>
@@ -115,11 +107,6 @@ require __DIR__ . '/includes/header.php';
       </div>
       <input type="submit" class="btn" value="Sign Up" name="signUp">
     </form>
-    <p class="or">----------or--------</p>
-    <div class="icons">
-      <i class="fab fa-google"></i>
-      <i class="fab fa-facebook"></i>
-    </div>
     <div class="links">
       <p>Already Have Account ?</p>
       <button type="button" id="signInButton">Sign In</button>
