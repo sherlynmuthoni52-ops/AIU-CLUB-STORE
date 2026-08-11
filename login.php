@@ -4,6 +4,7 @@ require_once __DIR__ . '/includes/auth.php';
 
 $error = '';
 $showSignup = false;
+$showLogoutPopup = false;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['signUp'])) {
@@ -49,6 +50,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $error = 'Not Found, Incorrect Email or Password';
     }
+}
+
+if (isset($_GET['message']) && $_GET['message'] === 'logout') {
+    $showLogoutPopup = true;
 }
 
 $page_title = 'Log in | AIU Club Store';
@@ -121,4 +126,9 @@ require __DIR__ . '/includes/header.php';
     </div>
   </div>
 </main>
+<?php if ($showLogoutPopup) { ?>
+<script>
+  alert('You have logged out.');
+</script>
+<?php } ?>
 <?php require __DIR__ . '/includes/footer.php'; ?>
