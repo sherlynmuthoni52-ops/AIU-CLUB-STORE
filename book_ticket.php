@@ -38,6 +38,15 @@ try {
 
     $userId = (int) current_user()['id'];
 
+    // Check if the user has already booked a ticket for this event
+    $existing = $db->prepare('SELECT id FROM tickets WHERE event_id = ? AND user_id = ?');
+    $existing->bind_param('ii', $eventId, $userId);
+    $existing->execute();
+    $existingResult = $existing->get_result();
+    if ($existingResult->fetch_assoc()) {
+        throw new Exception('You have already booked a ticket for this event.');
+    }
+
     // Generate unique ticket code
     $code = 'AIU-' . date('Y') . '-' . strtoupper(bin2hex(random_bytes(4)));
 

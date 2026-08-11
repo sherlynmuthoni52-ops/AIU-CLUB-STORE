@@ -14,8 +14,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $product_id = filter_input(INPUT_POST, 'product_id', FILTER_VALIDATE_INT);
 
     if ($product_id) {
+        $wasInCart = isset($_SESSION['cart'][$product_id]);
         $_SESSION['cart'][$product_id] = ($_SESSION['cart'][$product_id] ?? 0) + 1;
-        set_message('Product added to your cart.');
+        set_message($wasInCart
+            ? 'Item is already in your cart. Quantity updated to ' . $_SESSION['cart'][$product_id] . '.'
+            : 'Product added to your cart.');
     }
 
     header('Location: cart.php');

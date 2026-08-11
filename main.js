@@ -27,9 +27,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const btn = e.target.closest('.button');
     if (!btn) return;
 
-    e.preventDefault(); // buttons in this demo are links — prevent navigation
+    // Only intercept placeholder/demo buttons (links with href="#" or no href).
+    // DO NOT prevent default for:
+    //   - <button type="submit"> inside a <form>  (e.g. "Add to Cart")
+    //   - <a> links with a real href               (e.g. "Book Ticket" → book_ticket.php)
+    const isFormButton = btn.tagName === 'BUTTON' && btn.closest('form') !== null;
+    const isRealLink = btn.tagName === 'A' && btn.getAttribute('href') && btn.getAttribute('href') !== '#';
+    if (isFormButton || isRealLink) {
+      return; // Let the form submit or link navigate naturally
+    }
 
-    // If the button is an add-to-cart / book button, increment cart count
+    e.preventDefault();
+
+    // Demo-only feedback for placeholder buttons
     const text = btn.textContent.trim().toLowerCase();
     if (text.includes('add to cart') || text.includes('book') || text.includes('reserve')) {
       if (cartLink) {
@@ -47,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const existing = document.querySelector('.flash-message');
     if (existing) existing.remove();
     const div = document.createElement('div');
-    div.className = 'flash-message ' + type;
+    div.className = 'flash-message ' + type + ' show';
     div.textContent = msg;
     Object.assign(div.style, {
       position: 'fixed',
