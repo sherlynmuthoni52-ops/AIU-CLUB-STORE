@@ -43,13 +43,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($action === 'allocate' && $userId && $clubId) {
-        // Verify the user is a club_admin.
-        $user = $db->query('SELECT id, role FROM users WHERE id=' . (int) $userId)->fetch_assoc();
+        // Verify the user is a club_admin using a prepared statement.
+        $stmt = $db->prepare('SELECT id, role FROM users WHERE id = ?');
+        if ($stmt) {
+            $stmt->bind_param('i', $userId);
+            $stmt->execute();
+            $user = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+        } else {
+            $user = null;
+        }
         if ($user && $user['role'] === 'club_admin') {
             $stmt = $db->prepare('INSERT IGNORE INTO club_admins (user_id, club_id) VALUES (?, ?)');
             if ($stmt) {
                 $stmt->bind_param('ii', $userId, $clubId);
                 $stmt->execute();
+                $stmt->close();
                 set_message('Club allocated to admin successfully.');
             } else {
                 set_message('Failed to prepare allocation query.');
@@ -64,6 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($stmt) {
             $stmt->bind_param('ii', $userId, $clubId);
             $stmt->execute();
+            $stmt->close();
             set_message('Allocation removed successfully.');
         } else {
             set_message('Failed to prepare removal query.');

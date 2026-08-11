@@ -191,12 +191,11 @@ function pull_message(): ?string
  */
 function table_exists(mysqli $db, string $tableName): bool
 {
-    $stmt = $db->prepare('SHOW TABLES LIKE ?');
-    if (!$stmt) {
-        return false;
-    }
-    $stmt->bind_param('s', $tableName);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    // MySQL does not reliably support ? placeholders inside SHOW TABLES LIKE
+    // prepared statements — prepare() may silently fail and always return false.
+    // Use a direct query with real_escape_string instead, mirroring the approach
+    // used by verify_and_migrate() in config/database.php.
+    $table = $db->real_escape_string($tableName);
+    $result = $db->query("SHOW TABLES LIKE '{$table}'");
     return $result && $result->num_rows > 0;
 }
