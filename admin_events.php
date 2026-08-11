@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (!$clubId || !$title || !$venue || !$date || !$capacity || $capacity < 1 || $price === false || $price < 0) {
             set_message('Complete all required event fields.');
-        } elseif (!in_array($clubId, $managedClubIds, true)) {
+        } elseif (!$isSuperAdmin && !in_array($clubId, $managedClubIds, true)) {
             set_message('You can only manage events for your allocated club.');
         } elseif ($id) {
             // Update an existing event.
@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
         if ($id) {
             $event = $db->query('SELECT club_id FROM events WHERE id=' . (int) $id)->fetch_assoc();
-            if ($event && in_array((int) $event['club_id'], $managedClubIds, true)) {
+            if ($event && ($isSuperAdmin || in_array((int) $event['club_id'], $managedClubIds, true))) {
                 try {
                     $db->query('DELETE FROM events WHERE id=' . (int) $id);
                     set_message('Event deleted.');

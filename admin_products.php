@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (!$clubId || !$name || $price === false || $price < 0 || $stock === false || $stock < 0 || !$category) {
             set_message('Please complete all product fields with valid values.');
-        } elseif (!in_array($clubId, $managedClubIds, true)) {
+        } elseif (!$isSuperAdmin && !in_array($clubId, $managedClubIds, true)) {
             set_message('You can only manage products for your allocated club.');
         } elseif ($id) {
             // Update an existing product.
@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($id) {
             // Verify the product belongs to a managed club.
             $product = $db->query('SELECT club_id FROM products WHERE id=' . (int) $id)->fetch_assoc();
-            if ($product && in_array((int) $product['club_id'], $managedClubIds, true)) {
+            if ($product && ($isSuperAdmin || in_array((int) $product['club_id'], $managedClubIds, true))) {
                 try {
                     $db->query('DELETE FROM products WHERE id=' . (int) $id);
                     set_message('Product deleted.');
@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $editing = null;
 if ($id = filter_input(INPUT_GET, 'edit', FILTER_VALIDATE_INT)) {
     $editing = $db->query('SELECT * FROM products WHERE id=' . (int) $id)->fetch_assoc();
-    if ($editing && !in_array((int) $editing['club_id'], $managedClubIds, true)) {
+    if ($editing && !$isSuperAdmin && !in_array((int) $editing['club_id'], $managedClubIds, true)) {
         $editing = null;
     }
 }

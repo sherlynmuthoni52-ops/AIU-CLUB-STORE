@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!$clubId || !$title || !$venue || !$date || !$capacity || $capacity < 1 || $price === false || $price < 0) {
         set_message('Complete all required fields.');
-    } elseif (!in_array($clubId, $managedClubIds, true)) {
+    } elseif (!$isSuperAdmin && !in_array($clubId, $managedClubIds, true)) {
         set_message('You can only manage events for your allocated club.');
     } else {
         $stmt = $db->prepare('UPDATE events SET club_id=?, title=?, description=?, venue=?, `date`=?, capacity=?, ticket_price=? WHERE id=?');
