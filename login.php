@@ -2,50 +2,123 @@
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/includes/auth.php';
 
-/**
- * AIU Club Store - Login
- *
- * Authenticates users and creates a session on success.
- */
-
 $error = '';
+$showSignup = false;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim($_POST['email'] ?? '');
-    $password = $_POST['password'] ?? '';
+    if (isset($_POST['signUp'])) {
+        $showSignup = true;
+        $name = trim($_POST['name'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $password = $_POST['password'] ?? '';
 
-    $stmt = database()->prepare(
-        'SELECT id, name, email, password, role FROM users WHERE email = ? LIMIT 1'
-    );
-    $stmt->bind_param('s', $email);
-    $stmt->execute();
+        if (!$name || !filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($password) < 8) {
+            $error = 'Enter your name, a valid email, and a password of at least 8 characters.';
+        } else {
+            $stmt = database()->prepare('INSERT INTO users (name, email, password) VALUES (?, ?, ?)');
+            $hash = password_hash($password, PASSWORD_DEFAULT);
 
-    $user = $stmt->get_result()->fetch_assoc();
+            if ($stmt->bind_param('sss', $name, $email, $hash) && $stmt->execute()) {
+                set_message('Registration successful. Please log in.');
+                header('Location: login.php');
+                exit;
+            }
 
-    if ($user && password_verify($password, $user['password'])) {
-        unset($user['password']);
-        $_SESSION['user'] = $user;
-        set_message('Welcome back, ' . $user['name'] . '!');
-        header('Location: index.php');
-        exit;
+            $error = 'This email may already be registered.';
+        }
+    } elseif (isset($_POST['signIn'])) {
+        $showSignup = false;
+        $email = trim($_POST['email'] ?? '');
+        $password = $_POST['password'] ?? '';
+
+        $stmt = database()->prepare(
+            'SELECT id, name, email, password, role FROM users WHERE email = ? LIMIT 1'
+        );
+        $stmt->bind_param('s', $email);
+        $stmt->execute();
+
+        $user = $stmt->get_result()->fetch_assoc();
+
+        if ($user && password_verify($password, $user['password'])) {
+            unset($user['password']);
+            $_SESSION['user'] = $user;
+            set_message('Welcome back, ' . $user['name'] . '!');
+            header('Location: index.php');
+            exit;
+        }
+
+        $error = 'Not Found, Incorrect Email or Password';
     }
-
-    $error = 'Incorrect email or password.';
 }
 
 $page_title = 'Log in | AIU Club Store';
 require __DIR__ . '/includes/header.php';
 ?>
-<main class="container section form-page">
-  <h2>Log In</h2>
-  <?php if ($error) { ?>
-    <p class="error"><?php echo htmlspecialchars($error); ?></p>
-  <?php } ?>
-  <form method="post" class="form-card">
-    <label>Email<input name="email" type="email" required></label>
-    <label>Password<input name="password" type="password" required></label>
-    <button class="button">Log In</button>
-    <p>New student? <a class="text-link" href="register.php">Create an account</a>.</p>
-  </form>
+<main class="container section">
+  <div class="auth-container" id="signIn" style="display: <?php echo $showSignup ? 'none' : 'block'; ?>;">
+    <h1 class="form-title">Sign In</h1>
+    <?php if ($error && !$showSignup) { ?>
+      <p class="error" style="color:#9b2c2c; text-align:center; margin-bottom:1rem;"><?php echo htmlspecialchars($error); ?></p>
+    <?php } ?>
+    <form method="post" class="auth-form">
+      <div class="input-group">
+        <i class="fas fa-envelope"></i>
+        <input type="email" name="email" id="signin-email" placeholder="Email" required>
+        <label for="signin-email">Email</label>
+      </div>
+      <div class="input-group">
+        <i class="fas fa-lock"></i>
+        <input type="password" name="password" id="signin-password" placeholder="Password" required>
+        <label for="signin-password">Password</label>
+      </div>
+      <p class="recover">
+        <a href="#">Recover Password</a>
+      </p>
+      <input type="submit" class="btn" value="Sign In" name="signIn">
+    </form>
+    <p class="or">----------or--------</p>
+    <div class="icons">
+      <i class="fab fa-google"></i>
+      <i class="fab fa-facebook"></i>
+    </div>
+    <div class="links">
+      <p>Don't have account yet?</p>
+      <button type="button" id="signUpButton">Sign Up</button>
+    </div>
+  </div>
+
+  <div class="auth-container" id="signup" style="display: <?php echo $showSignup ? 'block' : 'none'; ?>;">
+    <h1 class="form-title">Register</h1>
+    <?php if ($error && $showSignup) { ?>
+      <p class="error" style="color:#9b2c2c; text-align:center; margin-bottom:1rem;"><?php echo htmlspecialchars($error); ?></p>
+    <?php } ?>
+    <form method="post" class="auth-form">
+      <div class="input-group">
+        <i class="fas fa-user"></i>
+        <input type="text" name="name" id="signup-name" placeholder="Name" required>
+        <label for="signup-name">Name</label>
+      </div>
+      <div class="input-group">
+        <i class="fas fa-envelope"></i>
+        <input type="email" name="email" id="signup-email" placeholder="Email" required>
+        <label for="signup-email">Email</label>
+      </div>
+      <div class="input-group">
+        <i class="fas fa-lock"></i>
+        <input type="password" name="password" id="signup-password" placeholder="Password" required>
+        <label for="signup-password">Password</label>
+      </div>
+      <input type="submit" class="btn" value="Sign Up" name="signUp">
+    </form>
+    <p class="or">----------or--------</p>
+    <div class="icons">
+      <i class="fab fa-google"></i>
+      <i class="fab fa-facebook"></i>
+    </div>
+    <div class="links">
+      <p>Already Have Account ?</p>
+      <button type="button" id="signInButton">Sign In</button>
+    </div>
+  </div>
 </main>
 <?php require __DIR__ . '/includes/footer.php'; ?>

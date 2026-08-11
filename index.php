@@ -13,8 +13,13 @@ $clubs = database()->query('SELECT id, name, description FROM clubs ORDER BY nam
 require __DIR__ . '/includes/header.php';
 ?>
 <header class="hero">
-  <h1>Wear Your Club. Join the Moment.</h1>
-  <p>Official student-club merchandise and tickets for exciting AIU events.</p>
+  <?php if (is_logged_in()) { ?>
+    <h1>Welcome back, <?php echo htmlspecialchars(current_user()['name']); ?>!</h1>
+    <p>Ready to explore the latest clubs, merchandise, and events?</p>
+  <?php } else { ?>
+    <h1>Wear Your Club. Join the Moment.</h1>
+    <p>Official student-club merchandise and tickets for exciting AIU events.</p>
+  <?php } ?>
   <a class="button" href="shop.php">Shop Merchandise</a>
   <a class="button outline" href="events.php">Explore Events</a>
 </header>
