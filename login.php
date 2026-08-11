@@ -47,5 +47,10 @@ require __DIR__ . '/includes/header.php';
     <button class="button">Log In</button>
     <p>New student? <a class="text-link" href="register.php">Create an account</a>.</p>
   </form>
+
+
+
+
+  
 </main>
 <?php require __DIR__ . '/includes/footer.php'; ?>
