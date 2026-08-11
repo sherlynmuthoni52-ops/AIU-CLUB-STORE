@@ -159,6 +159,7 @@ a {
   font-size: 2.8rem;
   margin: -20px -20px 16px;
   overflow: hidden;
+  cursor: zoom-in;
 }
 
 .card-image img {
@@ -167,6 +168,15 @@ a {
   height: 100%;
   object-fit: cover;
   object-position: center;
+  /* Scale effect: image smoothly zooms in within the bound container.
+     The container's overflow:hidden clips the zoomed image,
+     so the surrounding layout is never disrupted. */
+  transform: scale(1);
+  transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.card-image:hover img {
+  transform: scale(1.12);
 }
 
 .image-preview {
