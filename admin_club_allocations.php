@@ -26,6 +26,22 @@ if (current_user()['role'] !== 'super_admin') {
 $db = database();
 
 // -----------------------------------------------------------------------------
+// Helper: Check if a table exists
+// -----------------------------------------------------------------------------
+
+function table_exists(mysqli $db, string $tableName): bool
+{
+    $stmt = $db->prepare('SHOW TABLES LIKE ?');
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param('s', $tableName);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    return $result && $result->num_rows > 0;
+}
+
+// -----------------------------------------------------------------------------
 // Handle Form Submissions
 // -----------------------------------------------------------------------------
 
@@ -35,23 +51,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $clubId = filter_input(INPUT_POST, 'club_id', FILTER_VALIDATE_INT);
 
     if ($action === 'allocate' && $userId && $clubId) {
-        // Verify the user is a club_admin.
-        $user = $db->query('SELECT id, role FROM users WHERE id=' . (int) $userId)->fetch_assoc();
-        if ($user && $user['role'] === 'club_admin') {
-            $stmt = $db->prepare('INSERT IGNORE INTO club_admins (user_id, club_id) VALUES (?, ?)');
-            $stmt->bind_param('ii', $userId, $clubId);
-            $stmt->execute();
-            set_message('Club allocated to admin.');
+        if (!table_exists($db, 'club_admins')) {
+            set_message('The club_admins table does not exist. Please import the updated database.sql.');
         } else {
-            set_message('Selected user is not a club admin.');
+            // Verify the user is a club_admin.
+            $user = $db->query('SELECT id, role FROM users WHERE id=' . (int) $userId)->fetch_assoc();
+            if ($user && $user['role'] === 'club_admin') {
+                $stmt = $db->prepare('INSERT IGNORE INTO club_admins (user_id, club_id) VALUES (?, ?)');
+                if ($stmt) {
+                    $stmt->bind_param('ii', $userId, $clubId);
+                    $stmt->execute();
+                    set_message('Club allocated to admin.');
+                } else {
+                    set_message('Failed to prepare allocation query. Please import the updated database.sql.');
+                }
+            } else {
+                set_message('Selected user is not a club admin.');
+            }
         }
     }
 
     if ($action === 'remove' && $userId && $clubId) {
-        $stmt = $db->prepare('DELETE FROM club_admins WHERE user_id = ? AND club_id = ?');
-        $stmt->bind_param('ii', $userId, $clubId);
-        $stmt->execute();
-        set_message('Allocation removed.');
+        if (!table_exists($db, 'club_admins')) {
+            set_message('The club_admins table does not exist. Please import the updated database.sql.');
+        } else {
+            $stmt = $db->prepare('DELETE FROM club_admins WHERE user_id = ? AND club_id = ?');
+            if ($stmt) {
+                $stmt->bind_param('ii', $userId, $clubId);
+                $stmt->execute();
+                set_message('Allocation removed.');
+            } else {
+                set_message('Failed to prepare removal query. Please import the updated database.sql.');
+            }
+        }
     }
 
     header('Location: admin_club_allocations.php');
@@ -63,29 +95,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // -----------------------------------------------------------------------------
 
 // All club admins.
-$clubAdmins = $db->query(
+$clubAdminsResult = $db->query(
     'SELECT users.id, users.name, users.email FROM users WHERE users.role = "club_admin" ORDER BY users.name'
 );
+$clubAdmins = $clubAdminsResult ?: new stdClass(); // fallback empty object
 
 // All clubs.
-$clubs = $db->query('SELECT id, name FROM clubs ORDER BY name');
+$clubsResult = $db->query('SELECT id, name FROM clubs ORDER BY name');
+$clubs = $clubsResult ?: new stdClass();
 
 // Current allocations with club names.
-$allocations = $db->query(
-    'SELECT club_admins.user_id, club_admins.club_id, users.name AS admin_name, clubs.name AS club_name
-     FROM club_admins
-     JOIN users ON users.id = club_admins.user_id
-     JOIN clubs ON clubs.id = club_admins.club_id
-     ORDER BY clubs.name, users.name'
-);
+$allocations = null;
+if (table_exists($db, 'club_admins')) {
+    $allocationsResult = $db->query(
+        'SELECT club_admins.user_id, club_admins.club_id, users.name AS admin_name, clubs.name AS club_name
+         FROM club_admins
+         JOIN users ON users.id = club_admins.user_id
+         JOIN clubs ON clubs.id = club_admins.club_id
+         ORDER BY clubs.name, users.name'
+    );
+    if ($allocationsResult) {
+        $allocations = $allocationsResult;
+    }
+}
 
 // Clubs with no admin.
-$unallocatedClubs = $db->query(
-    'SELECT clubs.id, clubs.name FROM clubs
-     LEFT JOIN club_admins ON club_admins.club_id = clubs.id
-     WHERE club_admins.id IS NULL
-     ORDER BY clubs.name'
-);
+$unallocatedClubs = null;
+if (table_exists($db, 'club_admins')) {
+    $unallocatedResult = $db->query(
+        'SELECT clubs.id, clubs.name FROM clubs
+         LEFT JOIN club_admins ON club_admins.club_id = clubs.id
+         WHERE club_admins.id IS NULL
+         ORDER BY clubs.name'
+    );
+    if ($unallocatedResult) {
+        $unallocatedClubs = $unallocatedResult;
+    }
+}
 
 // -----------------------------------------------------------------------------
 // Render Page
@@ -100,6 +146,10 @@ require __DIR__ . '/includes/header.php';
     </p>
     <h2>Club Allocations</h2>
     <p>Assign club administrators to clubs. Each club admin manages their allocated club(s).</p>
+
+    <?php if (!table_exists($db, 'club_admins')) { ?>
+        <p class="flash" style="background:#e53e3e;">The <strong>club_admins</strong> table does not exist yet. Please import the updated <strong>database.sql</strong> in phpMyAdmin to enable club allocations.</p>
+    <?php } ?>
 
     <!-- Allocate Club Admin -->
     <h3>Allocate Club to Admin</h3>
@@ -132,7 +182,7 @@ require __DIR__ . '/includes/header.php';
 
     <!-- Current Allocations -->
     <h3>Current Allocations</h3>
-    <?php if ($allocations->num_rows) { ?>
+    <?php if ($allocations && $allocations->num_rows) { ?>
         <table class="table">
             <thead>
                 <tr>
@@ -164,7 +214,7 @@ require __DIR__ . '/includes/header.php';
 
     <!-- Unallocated Clubs -->
     <h3>Unallocated Clubs</h3>
-    <?php if ($unallocatedClubs->num_rows) { ?>
+    <?php if ($unallocatedClubs && $unallocatedClubs->num_rows) { ?>
         <table class="table">
             <thead>
                 <tr>

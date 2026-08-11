@@ -94,10 +94,13 @@ function managed_club_ids(): array
 
     if ($user['role'] === 'club_admin') {
         $stmt = $db->prepare('SELECT club_id FROM club_admins WHERE user_id = ?');
-        $stmt->bind_param('i', $user['id']);
-        $stmt->execute();
-        $result = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-        return array_column($result, 'club_id');
+        if ($stmt) {
+            $stmt->bind_param('i', $user['id']);
+            $stmt->execute();
+            $result = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+            return array_column($result, 'club_id');
+        }
+        return [];
     }
 
     return [];
@@ -148,9 +151,12 @@ function manages_club(int $clubId): bool
 
     $db = database();
     $stmt = $db->prepare('SELECT id FROM club_admins WHERE user_id = ? AND club_id = ? LIMIT 1');
-    $stmt->bind_param('ii', $user['id'], $clubId);
-    $stmt->execute();
-    return (bool) $stmt->get_result()->fetch_assoc();
+    if ($stmt) {
+        $stmt->bind_param('ii', $user['id'], $clubId);
+        $stmt->execute();
+        return (bool) $stmt->get_result()->fetch_assoc();
+    }
+    return false;
 }
 
 /**

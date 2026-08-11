@@ -88,8 +88,10 @@ $clubs = $db->query('SELECT * FROM clubs ORDER BY name');
 // Fetch club admin counts.
 $adminCounts = [];
 $result = $db->query('SELECT club_id, COUNT(*) AS count FROM club_admins GROUP BY club_id');
-while ($row = $result->fetch_assoc()) {
-    $adminCounts[$row['club_id']] = (int) $row['count'];
+if ($result) {
+    while ($row = $result->fetch_assoc()) {
+        $adminCounts[$row['club_id']] = (int) $row['count'];
+    }
 }
 
 // -----------------------------------------------------------------------------
