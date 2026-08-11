@@ -8,7 +8,7 @@ require_once __DIR__ . '/config/database.php';
  */
 
 $page_title = 'AIU Club Store';
-$clubs = database()->query('SELECT id, name, description FROM clubs ORDER BY name LIMIT 3');
+$clubs = database()->query('SELECT id, name, description FROM clubs ORDER BY name');
 
 require __DIR__ . '/includes/header.php';
 ?>
@@ -34,7 +34,7 @@ require __DIR__ . '/includes/header.php';
         <a class="text-link" href="shop.php?club=<?php echo (int) $club['id']; ?>">View merchandise</a>
       </article>
     <?php }} else { ?>
-      <p>Add clubs in phpMyAdmin to display them here.</p>
+      <p>No clubs found. <a class="text-link" href="setup_database.php">Run the database setup</a> to create sample clubs.</p>
     <?php } ?>
   </div>
 </main>
