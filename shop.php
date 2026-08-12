@@ -49,9 +49,6 @@ require __DIR__ . '/includes/header.php';
           <?php if ($product['image']): ?>
             <div class="img-zoom">
               <img src="uploads/<?php echo htmlspecialchars($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="img-thumb">
-              <div class="img-lens">
-                <img src="uploads/<?php echo htmlspecialchars($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="img-floating">
-              </div>
             </div>
           <?php else: ?>
             AIU
