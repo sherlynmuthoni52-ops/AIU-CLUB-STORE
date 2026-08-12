@@ -66,7 +66,7 @@ require __DIR__ . '/includes/header.php';
     <p>Manage products, events, and entry verification.</p>
 
     <!-- Summary Cards -->
-    <div class="grid">
+    <div class="grid summary-grid">
         <?php foreach ($counts as $label => $count) { ?>
             <article class="card">
                 <h3><?php echo $label; ?></h3>
