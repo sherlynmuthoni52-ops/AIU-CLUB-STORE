@@ -63,7 +63,7 @@ require __DIR__ . '/includes/header.php';
 ?>
 <main class="container section">
     <p>
-        <a class="text-link" href="admin.php">&larr; Dashboard</a>
+        <a class="button dashboard-btn" href="admin.php">&larr; Dashboard</a>
     </p>
     <h2>Sales and Attendance Reports</h2>
 
