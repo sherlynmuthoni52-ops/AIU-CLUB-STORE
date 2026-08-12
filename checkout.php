@@ -84,8 +84,17 @@ try {
 
     // Insert order items and update stock
     $itemStmt = $db->prepare('INSERT INTO order_items (order_id, product_id, size, quantity, price) VALUES (?, ?, ?, ?, ?)');
+    if (!$itemStmt) {
+        throw new Exception('Checkout is not ready: order_items table is missing the size column. Please run setup_database.php.');
+    }
     $stockStmt = $db->prepare('UPDATE products SET stock = stock - ? WHERE id = ?');
+    if (!$stockStmt) {
+        throw new Exception('Checkout is not ready: unable to prepare stock update.');
+    }
     $sizeStockStmt = $db->prepare('UPDATE product_sizes SET stock = stock - ? WHERE product_id = ? AND size = ?');
+    if (!$sizeStockStmt) {
+        throw new Exception('Checkout is not ready: unable to prepare size stock update.');
+    }
 
     foreach ($items as [$id, $size, $quantity, $price]) {
         $itemStmt->bind_param('iisid', $orderId, $id, $size, $quantity, $price);
@@ -109,6 +118,9 @@ try {
     $payment = $db->prepare(
         'INSERT INTO payments (user_id, order_id, amount, method, status, reference) VALUES (?, ?, ?, ?, ?, ?)'
     );
+    if (!$payment) {
+        throw new Exception('Checkout is not ready: unable to prepare payment insert.');
+    }
     $payment->bind_param('iidsss', $userId, $orderId, $total, $method, $pending, $reference);
     $payment->execute();
 

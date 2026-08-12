@@ -51,12 +51,11 @@ function verify_and_migrate(mysqli $conn, array $expectedTables, bool $autoRunSe
 
     if (empty($missing)) {
         error_log('[DB_STARTUP] All expected tables present: ' . implode(', ', $expectedTables));
-        return;
+    } else {
+        error_log('[DB_STARTUP] Missing tables detected: ' . implode(', ', $missing));
     }
 
-    error_log('[DB_STARTUP] Missing tables detected: ' . implode(', ', $missing));
-
-    if ($autoRunSetup) {
+    if ($autoRunSetup && !empty($missing)) {
         $setupPath = __DIR__ . '/../setup_database.php';
         if (is_file($setupPath) && is_readable($setupPath)) {
             error_log('[DB_STARTUP] Attempting to run setup script: ' . $setupPath);
@@ -89,25 +88,58 @@ function verify_and_migrate(mysqli $conn, array $expectedTables, bool $autoRunSe
 
             if (empty($stillMissing)) {
                 error_log('[DB_STARTUP] setup script created missing tables successfully.');
-                return;
+                $missing = [];
+            } else {
+                error_log('[DB_STARTUP] setup script did not create tables: ' . implode(', ', $stillMissing));
+                $missing = $stillMissing;
             }
-
-            error_log('[DB_STARTUP] setup script did not create tables: ' . implode(', ', $stillMissing));
-            $missing = $stillMissing;
         } else {
             error_log('[DB_STARTUP] setup_database.php not found or not readable: ' . $setupPath);
         }
     }
 
-    // Final failure: inform the caller and stop further processing to avoid runtime errors.
-    http_response_code(503);
-    header('Content-Type: text/plain; charset=utf-8');
-    echo "Service Unavailable: required database tables are missing: " . implode(', ', $missing) . "\n";
-    echo "Please run setup_database.php (visit /setup_database.php) or ensure migrations were applied.";
+    if (!empty($missing)) {
+        // Final failure: inform the caller and stop further processing to avoid runtime errors.
+        http_response_code(503);
+        header('Content-Type: text/plain; charset=utf-8');
+        echo "Service Unavailable: required database tables are missing: " . implode(', ', $missing) . "\n";
+        echo "Please run setup_database.php (visit /setup_database.php) or ensure migrations were applied.";
 
-    // Add a helpful log entry before exiting.
-    error_log('[DB_STARTUP] Aborting startup due to missing tables: ' . implode(', ', $missing));
-    exit(1);
+        // Add a helpful log entry before exiting.
+        error_log('[DB_STARTUP] Aborting startup due to missing tables: ' . implode(', ', $missing));
+        exit(1);
+    }
+
+    // -------------------------------------------------------------------------
+    // Column-level migrations for existing databases
+    // -------------------------------------------------------------------------
+
+    $columnMigrations = [
+        'order_items' => [
+            'size' => "ALTER TABLE order_items ADD COLUMN size VARCHAR(20) NULL AFTER product_id",
+        ],
+    ];
+
+    foreach ($columnMigrations as $table => $columns) {
+        $tbl = $conn->real_escape_string($table);
+        $tableExists = $conn->query("SHOW TABLES LIKE '{$tbl}'");
+        if (!($tableExists && $tableExists->num_rows > 0)) {
+            continue;
+        }
+
+        foreach ($columns as $column => $sql) {
+            $col = $conn->real_escape_string($column);
+            $res = $conn->query("SHOW COLUMNS FROM {$tbl} LIKE '{$col}'");
+            if (!($res && $res->num_rows > 0)) {
+                error_log("[DB_STARTUP] Missing column detected: {$table}.{$column}");
+                if ($conn->query($sql) === true) {
+                    error_log("[DB_STARTUP] Added missing column: {$table}.{$column}");
+                } else {
+                    error_log("[DB_STARTUP] Failed to add column {$table}.{$column}: " . $conn->error);
+                }
+            }
+        }
+    }
 }
 
 /**
