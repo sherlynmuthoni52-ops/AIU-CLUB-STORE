@@ -40,7 +40,15 @@ function current_user(): ?array
  */
 function cart_count(): int
 {
-    return array_sum($_SESSION['cart'] ?? []);
+    $count = 0;
+    foreach ($_SESSION['cart'] ?? [] as $sizes) {
+        if (is_array($sizes)) {
+            $count += array_sum($sizes);
+        } else {
+            $count += (int) $sizes;
+        }
+    }
+    return $count;
 }
 
 /**

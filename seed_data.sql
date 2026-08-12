@@ -16,7 +16,10 @@ INSERT INTO products (club_id, name, price, image, stock, category) VALUES
 
 -- Insert sample product sizes.
 INSERT INTO product_sizes (product_id, size, stock) VALUES
-(1, 'S', 8), (1, 'M', 10), (1, 'L', 7), (4, 'M', 6), (4, 'L', 6);
+(1, 'S', 8), (1, 'M', 10), (1, 'L', 7),
+(2, 'S', 6), (2, 'M', 6), (2, 'L', 6),
+(3, 'Standard', 20),
+(4, 'M', 6), (4, 'L', 6);
 
 -- Insert sample events.
 INSERT INTO events (club_id, title, description, venue, `date`, capacity, ticket_price) VALUES

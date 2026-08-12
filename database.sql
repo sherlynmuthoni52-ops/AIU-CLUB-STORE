@@ -90,6 +90,7 @@ CREATE TABLE order_items (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   order_id INT UNSIGNED NOT NULL,
   product_id INT UNSIGNED NOT NULL,
+  size VARCHAR(20) NULL,
   quantity INT UNSIGNED NOT NULL,
   price DECIMAL(10,2) NOT NULL,
   CONSTRAINT fk_order_items_order

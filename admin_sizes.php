@@ -2,7 +2,7 @@
 /**
  * AIU Club Store - Product Sizes
  *
- * Allows administrators to add and update size-specific stock levels
+ * Allows administrators to add, edit, and delete size-specific stock levels
  * for a given product (e.g., S, M, L, XL).
  * Club administrators can only manage sizes for products in their allocated club.
  */
@@ -43,19 +43,27 @@ if (!$isSuperAdmin) {
 }
 
 // -----------------------------------------------------------------------------
-// Handle Form Submission
+// Handle Add / Update / Delete
 // -----------------------------------------------------------------------------
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = $_POST['action'] ?? '';
     $size = strtoupper(trim($_POST['size'] ?? ''));
-    $stock = filter_input(INPUT_POST, 'stock', FILTER_VALIDATE_INT);
 
-    if ($size && $stock !== false && $stock >= 0) {
-        // Insert a new size or update stock if the size already exists for this product.
-        $stmt = $db->prepare('INSERT INTO product_sizes (product_id, size, stock) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE stock=VALUES(stock)');
-        $stmt->bind_param('isi', $productId, $size, $stock);
+    if ($action === 'delete' && $size !== '') {
+        $stmt = $db->prepare('DELETE FROM product_sizes WHERE product_id = ? AND size = ?');
+        $stmt->bind_param('is', $productId, $size);
         $stmt->execute();
-        set_message('Size saved.');
+        set_message('Size deleted.');
+    } elseif ($size !== '') {
+        $stock = filter_input(INPUT_POST, 'stock', FILTER_VALIDATE_INT);
+
+        if ($stock !== false && $stock >= 0) {
+            $stmt = $db->prepare('INSERT INTO product_sizes (product_id, size, stock) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE stock=VALUES(stock)');
+            $stmt->bind_param('isi', $productId, $size, $stock);
+            $stmt->execute();
+            set_message('Size saved.');
+        }
     }
 
     header('Location: admin_sizes.php?product_id=' . $productId);
@@ -81,7 +89,7 @@ require __DIR__ . '/includes/header.php';
     </p>
     <h2>Sizes: <?php echo htmlspecialchars($product['name']); ?></h2>
 
-    <!-- Add / Update Size Form -->
+    <!-- Add Size Form -->
     <form method="post" class="form-card">
         <label>
             Size
@@ -91,7 +99,7 @@ require __DIR__ . '/includes/header.php';
             Stock
             <input name="stock" type="number" min="0" required>
         </label>
-        <button class="button">Save Size</button>
+        <button class="button" name="action" value="add">Add Size</button>
     </form>
 
     <!-- Sizes List -->
@@ -100,13 +108,25 @@ require __DIR__ . '/includes/header.php';
             <tr>
                 <th>Size</th>
                 <th>Stock</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             <?php while ($size = $sizes->fetch_assoc()) { ?>
                 <tr>
                     <td><?php echo htmlspecialchars($size['size']); ?></td>
-                    <td><?php echo $size['stock']; ?></td>
+                    <td><?php echo (int) $size['stock']; ?></td>
+                    <td>
+                        <form method="post" style="display:inline;">
+                            <input type="hidden" name="size" value="<?php echo htmlspecialchars($size['size']); ?>">
+                            <input type="hidden" name="stock" value="<?php echo (int) $size['stock']; ?>">
+                            <button type="submit" class="button" name="action" value="save">Save</button>
+                        </form>
+                        <form method="post" style="display:inline;" onsubmit="return confirm('Delete this size?');">
+                            <input type="hidden" name="size" value="<?php echo htmlspecialchars($size['size']); ?>">
+                            <button type="submit" class="button" name="action" value="delete">Delete</button>
+                        </form>
+                    </td>
                 </tr>
             <?php } ?>
         </tbody>

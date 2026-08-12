@@ -136,6 +136,7 @@ $tables = [
       id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
       order_id INT UNSIGNED NOT NULL,
       product_id INT UNSIGNED NOT NULL,
+      size VARCHAR(20) NULL,
       quantity INT UNSIGNED NOT NULL,
       price DECIMAL(10,2) NOT NULL,
       CONSTRAINT fk_order_items_order
@@ -209,6 +210,19 @@ foreach ($indexes as $name => $sql) {
 }
 
 // -----------------------------------------------------------------------------
+// Step 1b: Migrations for existing databases
+// -----------------------------------------------------------------------------
+
+// Add size column to order_items if missing.
+if (table_exists($db, 'order_items')) {
+    $cols = $db->query("SHOW COLUMNS FROM order_items LIKE 'size'");
+    if (!($cols && $cols->num_rows > 0)) {
+        $db->query("ALTER TABLE order_items ADD COLUMN size VARCHAR(20) NULL AFTER product_id");
+        $messages[] = '<span style="color:green;">✔ Added size column to order_items.</span>';
+    }
+}
+
+// -----------------------------------------------------------------------------
 // Step 2: Seed initial data if tables are empty
 // -----------------------------------------------------------------------------
 
@@ -235,6 +249,19 @@ if ($productsCount === 0) {
     $messages[] = '<span style="color:green;">✔ Seeded 4 sample products.</span>';
 } else {
     $messages[] = '<span style="color:green;">✔ Products table already has ' . $productsCount . ' rows.</span>';
+}
+
+// Seed product sizes.
+$sizesCount = (int) $db->query('SELECT COUNT(*) AS total FROM product_sizes')->fetch_assoc()['total'];
+if ($sizesCount === 0) {
+    $db->query("INSERT INTO product_sizes (product_id, size, stock) VALUES
+        (1, 'S', 8), (1, 'M', 10), (1, 'L', 7),
+        (2, 'S', 6), (2, 'M', 6), (2, 'L', 6),
+        (3, 'Standard', 20),
+        (4, 'M', 6), (4, 'L', 6)");
+    $messages[] = '<span style="color:green;">✔ Seeded sample product sizes.</span>';
+} else {
+    $messages[] = '<span style="color:green;">✔ Product sizes table already has ' . $sizesCount . ' rows.</span>';
 }
 
 // Seed events.
