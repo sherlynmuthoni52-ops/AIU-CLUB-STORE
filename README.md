@@ -28,6 +28,35 @@ AIU Student Club Store is a web application that enables university clubs to man
 - **Session Management**: PHP native sessions
 - **Security**: Prepared statements, CSRF-safe forms, password hashing, role-based access control
 
+## Purpose
+
+This PHP and MySQL web application lets AIU students buy club merchandise and reserve event tickets. Club administrators manage stock, events, orders, payments, reports, and ticket entry.
+
+## User Roles
+
+| Role | Access |
+|---|---|
+| Student | Register, log in, shop, checkout, book tickets, view own orders and tickets |
+| Club admin | All student actions plus dashboard, products, sizes, events, payments, reports, and check-in |
+| Super admin | Same access as club admin |
+
+## Database Relationships
+
+```mermaid
+erDiagram
+  CLUBS ||--o{ PRODUCTS : owns
+  CLUBS ||--o{ EVENTS : hosts
+  PRODUCTS ||--o{ PRODUCT_SIZES : has
+  USERS ||--o{ ORDERS : places
+  ORDERS ||--o{ ORDER_ITEMS : contains
+  PRODUCTS ||--o{ ORDER_ITEMS : appears_in
+  USERS ||--o{ TICKETS : owns
+  EVENTS ||--o{ TICKETS : has
+  USERS ||--o{ PAYMENTS : makes
+  ORDERS ||--o| PAYMENTS : paid_by
+  TICKETS ||--o| PAYMENTS : paid_by
+```
+
 ## Installation Requirements
 
 - **XAMPP** (or equivalent local PHP + MySQL + Apache stack)
@@ -103,12 +132,10 @@ aiu-club-store/
 ├── login.php                    # Login handler
 ├── logout.php                   # Session destroy
 ├── main.js                      # Client-side demo & interactions
-├── PROJECT_DOCUMENTATION.md     # Extended project docs
 ├── register.php                 # Registration handler
 ├── seed_data.sql                # Initial data
 ├── shop.php                     # Product catalog & add-to-cart
 ├── style.css                    # Global styles
-├── TESTING_CHECKLIST.md         # Manual testing steps
 └── uploads/                     # Product images
 ```
 
@@ -121,6 +148,15 @@ aiu-club-store/
 - **Upload Limits**: Image uploads are limited to 2 MB and resized client-side to 800x800 in `admin_product_image.php`.
 - **Role-Based Access**: Access control is enforced in `includes/auth.php` via `require_admin()`.
 
+## Security Measures
+
+- Passwords are stored using `password_hash()`.
+- Login uses `password_verify()`.
+- Admin pages require a valid admin role.
+- SQL writes use prepared statements.
+- Ticket codes are generated with `random_bytes()`.
+- Product uploads accept only JPG, PNG, and WebP files up to 2 MB.
+
 ## Troubleshooting
 
 - **"Access denied for user 'root'@'localhost'"**: Verify MySQL is running in XAMPP and the credentials in `config/database.php` are correct.
@@ -129,6 +165,14 @@ aiu-club-store/
 - **Foreign key constraint errors on delete**: Products linked to existing orders cannot be deleted. Update or archive orders first, or remove the constraint if intentional.
 - **Ticket booking fails with "already booked"**: Users may already have a ticket for that event. Check `tickets` table for duplicate `(event_id, user_id)` entries.
 - **Cart items disappearing**: Sessions rely on browser cookies. If cookies are disabled or the session expires, cart data is lost.
+
+## Future Improvements
+
+- M-Pesa payment integration
+- QR-code image generation and scanner support
+- Email ticket receipts
+- Product quantity controls in the cart
+- Club-specific admin permissions
 
 ## Contributing
 
