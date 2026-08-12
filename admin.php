@@ -60,7 +60,7 @@ require __DIR__ . '/includes/header.php';
 ?>
 <main class="container section">
     <p>
-        <a class="text-link" href="admin.php">&larr; Dashboard</a>
+        <a class="button dashboard-btn" href="admin.php">&larr; Dashboard</a>
     </p>
     <h2>Admin Dashboard</h2>
     <p>Manage products, events, and entry verification.</p>
@@ -78,9 +78,9 @@ require __DIR__ . '/includes/header.php';
     <!-- Club Allocation Overview (Super Admin Only) -->
     <?php if (current_user()['role'] === 'super_admin') { ?>
         <h3>Club Allocations</h3>
-        <p>
-            <a class="button" href="admin_club_allocations.php">Manage Allocations</a>
-        </p>
+    <p>
+        <a class="button allocations-btn" href="admin_club_allocations.php">Manage Allocations</a>
+    </p>
         <div class="grid">
             <article class="card">
                 <h3>Allocated Clubs</h3>
@@ -114,17 +114,17 @@ require __DIR__ . '/includes/header.php';
 
     <!-- Admin Management Links -->
     <h3>Management</h3>
-    <p>
+    <p class="admin-management">
         <?php if (current_user()['role'] === 'super_admin') { ?>
-            <a class="button" href="admin_clubs.php">Clubs</a>
-            <a class="button" href="admin_users.php">Users &amp; Roles</a>
+            <a class="button manage-btn" href="admin_clubs.php">Clubs</a>
+            <a class="button manage-btn" href="admin_users.php">Users &amp; Roles</a>
         <?php } ?>
-        <a class="button" href="admin_products.php">Products &amp; Sizes</a>
-        <a class="button" href="admin_product_image.php">Product Images</a>
-        <a class="button" href="admin_events.php">Events</a>
-        <a class="button" href="admin_orders.php">Orders &amp; Payments</a>
-        <a class="button" href="admin_reports.php">Reports</a>
-        <a class="button" href="ticket_checkin.php">Ticket Check-in</a>
+        <a class="button manage-btn" href="admin_products.php">Products &amp; Sizes</a>
+        <a class="button manage-btn" href="admin_product_image.php">Product Images</a>
+        <a class="button manage-btn" href="admin_events.php">Events</a>
+        <a class="button manage-btn" href="admin_orders.php">Orders &amp; Payments</a>
+        <a class="button manage-btn" href="admin_reports.php">Reports</a>
+        <a class="button manage-btn" href="ticket_checkin.php">Ticket Check-in</a>
     </p>
 </main>
 <?php require __DIR__ . '/includes/footer.php'; ?>

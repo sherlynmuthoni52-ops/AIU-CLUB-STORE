@@ -121,6 +121,64 @@ a {
   margin-left: 8px;
 }
 
+.button.manage-btn {
+  background: #fff;
+  color: #000;
+  border: 2px solid #d01a1a;
+  box-shadow: 0 2px 8px rgba(208, 26, 26, 0.12);
+  transition: background 200ms ease, color 200ms ease, border-color 200ms ease, transform 200ms ease, box-shadow 200ms ease;
+}
+
+.button.manage-btn:hover {
+  background: #d01a1a;
+  color: #fff;
+  border-color: #a01414;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(208, 26, 26, 0.25);
+  cursor: pointer;
+}
+
+.button.dashboard-btn {
+  background: #fff;
+  color: #000;
+  border: 2px solid #3182ce;
+  box-shadow: 0 2px 8px rgba(49, 130, 206, 0.15);
+  transition: background 200ms ease, color 200ms ease, border-color 200ms ease, transform 200ms ease, box-shadow 200ms ease;
+}
+
+.button.dashboard-btn:hover {
+  background: #3182ce;
+  color: #fff;
+  border-color: #2b6cb0;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(49, 130, 206, 0.3);
+  cursor: pointer;
+}
+
+.button.allocations-btn {
+  background: #fff;
+  color: #000;
+  border: 2px solid #c9a227;
+  box-shadow: 0 2px 8px rgba(201, 162, 39, 0.15);
+  transition: background 200ms ease, color 200ms ease, border-color 200ms ease, transform 200ms ease, box-shadow 200ms ease;
+}
+
+.button.allocations-btn:hover {
+  background: #c9a227;
+  color: #fff;
+  border-color: #a3851e;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(201, 162, 39, 0.35);
+  cursor: pointer;
+}
+
+/* Admin dashboard management link group spacing */
+.admin-management p {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 /* ============================================
    Sections & Headings
    ============================================ */
