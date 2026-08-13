@@ -141,25 +141,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (window.__loadedEvents) populateEventSelect(window.__loadedEvents, eventSelect);
       else window.__populateSelect = (evs) => populateEventSelect(evs, eventSelect);
     }
-
-    // When user clicks a book button on a card, preselect that event in the form
-    const eventsContainer = document.querySelector('#events-list');
-    if (eventsContainer) {
-      eventsContainer.addEventListener('click', (ev) => {
-        const bookBtn = ev.target.closest('.button');
-        if (!bookBtn) return;
-        const card = ev.target.closest('.event-card');
-        if (!card) return;
-        const id = card.dataset.id;
-        const sel = bookingForm.querySelector('[name="event"]');
-        if (sel) {
-          sel.value = id;
-          sel.dispatchEvent(new Event('change'));
-        }
-        // scroll to form for mobile/desktop
-        bookingForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      });
-    }
   }
 
   function showFieldError(form, fieldName, message) {
@@ -177,82 +158,6 @@ document.addEventListener('DOMContentLoaded', () => {
   function clearFormErrors(form) {
     form.querySelectorAll('.field-error').forEach(n => n.remove());
     form.querySelectorAll('input, select, textarea').forEach(i => i.style.borderColor = '');
-  }
-
-  // 4) Use fetch() to load data and render it on the page (events data)
-  const eventsContainer = document.querySelector('#events-list');
-  const searchInput = document.querySelector('#events-search');
-  if (eventsContainer) {
-    fetch('events.json')
-      .then(res => {
-        if (!res.ok) throw new Error('Network response was not ok');
-        return res.json();
-      })
-      .then(data => {
-        // data.events expected
-        const events = data.events || [];
-
-        // 5) Use map(), filter(), forEach() with arrays
-        // Example: create a list of free events using filter()
-        const freeEvents = events.filter(ev => ev.price === 'Free');
-
-        // Build HTML for all events using map(), include new fields and badges
-        const cardsHtml = events.map(ev => {
-          const tagsHtml = (ev.tags || []).map(t => `<span class="badge tag">${escapeHtml(t)}</span>`).join(' ');
-          const priceHtml = ev.price.toLowerCase() === 'free' ? `<span class="price">${escapeHtml(ev.price)} <span class="badge free">FREE</span></span>` : `<span class="price">${escapeHtml(ev.price)}</span>`;
-          return `\n            <article class="card event-card fade-in" data-host="${escapeHtml(ev.host)}" data-id="${ev.id}">\n              <div class="card-image">${ev.icon || '📅'}</div>\n              <p class="event-date">${escapeHtml(ev.date)}</p>\n              <h3>${escapeHtml(ev.title)} ${tagsHtml}</h3>\n              <p>${escapeHtml(ev.location)} · Hosted by ${escapeHtml(ev.host)}</p>\n              <p class="spots" data-spots="${Number(ev.spots_left || 0)}">${Number(ev.spots_left || 0)} left</p>\n              ${priceHtml}\n              <p style="margin-top:10px;"><a class="button" href="#">Book Ticket</a></p>\n            </article>\n          `;
-        }).join('');
-
-        eventsContainer.innerHTML = cardsHtml;
-
-        // Demonstrate forEach() - style badges and small UI touches
-        eventsContainer.querySelectorAll('.event-card').forEach(card => {
-          const priceEl = card.querySelector('.price');
-          if (priceEl && priceEl.textContent.trim().toLowerCase().includes('free')) {
-            // already has FREE badge in priceHtml; add pulse to draw attention
-            const freeBadge = priceEl.querySelector('.badge.free');
-            if (freeBadge) freeBadge.classList.add('pulse');
-            setTimeout(() => freeBadge && freeBadge.classList.remove('pulse'), 900);
-          }
-
-          // Add host badge after title
-          const host = card.dataset.host;
-          if (host) {
-            const h = card.querySelector('h3');
-            const hostBadge = document.createElement('span');
-            hostBadge.className = 'badge';
-            hostBadge.textContent = host;
-            h.appendChild(hostBadge);
-          }
-        });
-
-        // Make loaded events available to other handlers (e.g., populate booking select)
-        window.__loadedEvents = events;
-        if (typeof window.__populateSelect === 'function') window.__populateSelect(events);
-
-        // Example usage of the freeEvents array (logged)
-        console.info('Free events:', freeEvents.map(e => e.title));
-
-        // Example usage of the freeEvents array (logged)
-        console.info('Free events:', freeEvents.map(e => e.title));
-      })
-      .catch(err => {
-        eventsContainer.innerHTML = '<p style="color:#9b2c2c">Could not load events data.</p>';
-        console.error(err);
-      });
-  }
-
-  // Search/filter UI - filter events on key press using array methods
-  if (searchInput && eventsContainer) {
-    searchInput.addEventListener('input', (e) => {
-      const q = e.target.value.trim().toLowerCase();
-      const cards = Array.from(eventsContainer.querySelectorAll('.event-card'));
-      // Use filter to decide which cards to show
-      cards.forEach(card => {
-        const text = card.textContent.toLowerCase();
-        card.style.display = text.includes(q) ? '' : 'none';
-      });
-    });
   }
 
   // Utility: simple HTML escape (very small helper)
