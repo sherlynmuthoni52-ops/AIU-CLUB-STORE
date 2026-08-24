@@ -39,22 +39,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $capacity = filter_input(INPUT_POST, 'capacity', FILTER_VALIDATE_INT);
         $price = filter_input(INPUT_POST, 'ticket_price', FILTER_VALIDATE_FLOAT);
 
+        $posterError = null;
+        $poster = null;
+
         if (!$clubId || !$title || !$venue || !$date || !$capacity || $capacity < 1 || $price === false || $price < 0) {
             set_message('Complete all required event fields.');
         } elseif (!$isSuperAdmin && !in_array($clubId, $managedClubIds, true)) {
             set_message('You can only manage events for your allocated club.');
-        } elseif ($id) {
-            // Update an existing event.
-            $stmt = $db->prepare('UPDATE events SET club_id=?, title=?, description=?, venue=?, `date`=?, capacity=?, ticket_price=? WHERE id=?');
-            $stmt->bind_param('issssidi', $clubId, $title, $description, $venue, $date, $capacity, $price, $id);
-            $stmt->execute();
-            set_message('Event updated.');
         } else {
-            // Insert a new event.
-            $stmt = $db->prepare('INSERT INTO events (club_id,title,description,venue,`date`,capacity,ticket_price) VALUES (?,?,?,?,?,?,?)');
-            $stmt->bind_param('issssid', $clubId, $title, $description, $venue, $date, $capacity, $price);
-            $stmt->execute();
-            set_message('Event saved.');
+            $file = $_FILES['poster'] ?? null;
+            if ($file && $file['error'] === UPLOAD_ERR_OK) {
+                $allowedTypes = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+                if ($file['size'] > 2 * 1024 * 1024) {
+                    $posterError = 'Poster must be 2 MB or smaller.';
+                } else {
+                    $mime = (new finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']);
+                    if (!isset($allowedTypes[$mime])) {
+                        $posterError = 'Only JPG, PNG, and WebP image files are allowed.';
+                    } else {
+                        $folder = __DIR__ . '/uploads';
+                        if (!is_dir($folder)) {
+                            mkdir($folder, 0755, true);
+                        }
+                        $filename = 'event-' . bin2hex(random_bytes(8)) . '.' . $allowedTypes[$mime];
+                        $destinationPath = $folder . '/' . $filename;
+                        if (move_uploaded_file($file['tmp_name'], $destinationPath)) {
+                            $poster = $filename;
+                        } else {
+                            $posterError = 'The poster could not be saved.';
+                        }
+                    }
+                }
+            }
+
+            if ($posterError) {
+                set_message($posterError);
+            } else {
+                if ($id) {
+                    $stmt = $db->prepare('UPDATE events SET club_id=?, title=?, description=?, venue=?, `date`=?, capacity=?, ticket_price=?, poster=? WHERE id=?');
+                    $stmt->bind_param('issssidsi', $clubId, $title, $description, $venue, $date, $capacity, $price, $poster, $id);
+                    $stmt->execute();
+                    set_message('Event updated.');
+                } else {
+                    $stmt = $db->prepare('INSERT INTO events (club_id,title,description,venue,`date`,capacity,ticket_price,poster) VALUES (?,?,?,?,?,?,?,?)');
+                    $stmt->bind_param('issssisd', $clubId, $title, $description, $venue, $date, $capacity, $price, $poster);
+                    $stmt->execute();
+                    set_message('Event saved.');
+                }
+                header('Location: admin_events.php');
+                exit;
+            }
         }
     }
 
@@ -108,7 +142,7 @@ require __DIR__ . '/includes/header.php';
     <h2>Add Event</h2>
 
     <!-- Add Event Form -->
-    <form method="post" class="form-card">
+    <form method="post" enctype="multipart/form-data" class="form-card">
         <input type="hidden" name="action" value="save">
         <label>
             Club
@@ -146,6 +180,10 @@ require __DIR__ . '/includes/header.php';
         <label>
             Ticket price
             <input name="ticket_price" type="number" min="0" step="0.01" value="0" required>
+        </label>
+        <label>
+            Event poster
+            <input name="poster" type="file" accept="image/jpeg,image/png,image/webp">
         </label>
         <button class="button">Add Event</button>
     </form>

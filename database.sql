@@ -69,6 +69,7 @@ CREATE TABLE events (
   `date` DATETIME NOT NULL,
   capacity INT UNSIGNED NOT NULL,
   ticket_price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  poster VARCHAR(255),
   CONSTRAINT fk_events_club
     FOREIGN KEY (club_id) REFERENCES clubs(id)
     ON UPDATE CASCADE ON DELETE RESTRICT

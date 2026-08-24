@@ -113,6 +113,7 @@ $tables = [
       `date` DATETIME NOT NULL,
       capacity INT UNSIGNED NOT NULL,
       ticket_price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+      poster VARCHAR(255),
       CONSTRAINT fk_events_club
         FOREIGN KEY (club_id) REFERENCES clubs(id)
         ON UPDATE CASCADE ON DELETE RESTRICT
@@ -219,6 +220,15 @@ if (table_exists($db, 'order_items')) {
     if (!($cols && $cols->num_rows > 0)) {
         $db->query("ALTER TABLE order_items ADD COLUMN size VARCHAR(20) NULL AFTER product_id");
         $messages[] = '<span style="color:green;">✔ Added size column to order_items.</span>';
+    }
+}
+
+// Add poster column to events if missing.
+if (table_exists($db, 'events')) {
+    $cols = $db->query("SHOW COLUMNS FROM events LIKE 'poster'");
+    if (!($cols && $cols->num_rows > 0)) {
+        $db->query("ALTER TABLE events ADD COLUMN poster VARCHAR(255) NULL AFTER ticket_price");
+        $messages[] = '<span style="color:green;">✔ Added poster column to events.</span>';
     }
 }
 

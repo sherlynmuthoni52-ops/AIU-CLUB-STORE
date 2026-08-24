@@ -51,6 +51,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $date = trim($_POST['date'] ?? '');
     $capacity = filter_input(INPUT_POST, 'capacity', FILTER_VALIDATE_INT);
     $price = filter_input(INPUT_POST, 'ticket_price', FILTER_VALIDATE_FLOAT);
+    $removePoster = $_POST['remove_poster'] ?? '0';
+
+    $posterError = null;
+    $poster = $event['poster'] ?? null;
 
     if (!$clubId || !$title || !$venue || !$date || !$capacity || $capacity < 1 || $price === false || $price < 0) {
         set_message('Complete all required fields.');
@@ -60,9 +64,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $db->prepare('UPDATE events SET club_id=?, title=?, description=?, venue=?, `date`=?, capacity=?, ticket_price=? WHERE id=?');
         $stmt->bind_param('issssidi', $clubId, $title, $description, $venue, $date, $capacity, $price, $id);
         $stmt->execute();
-        set_message('Event updated.');
-        header('Location: admin_events.php');
-        exit;
+
+        if ($removePoster === '1' && $poster) {
+            $filePath = __DIR__ . '/uploads/' . $poster;
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+            $db->query('UPDATE events SET poster=NULL WHERE id=' . (int) $id);
+        } else {
+            $file = $_FILES['poster'] ?? null;
+            if ($file && $file['error'] === UPLOAD_ERR_OK) {
+                $allowedTypes = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+                if ($file['size'] > 2 * 1024 * 1024) {
+                    $posterError = 'Poster must be 2 MB or smaller.';
+                } else {
+                    $mime = (new finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']);
+                    if (!isset($allowedTypes[$mime])) {
+                        $posterError = 'Only JPG, PNG, and WebP image files are allowed.';
+                    } else {
+                        $folder = __DIR__ . '/uploads';
+                        if (!is_dir($folder)) {
+                            mkdir($folder, 0755, true);
+                        }
+                        $filename = 'event-' . bin2hex(random_bytes(8)) . '.' . $allowedTypes[$mime];
+                        $destinationPath = $folder . '/' . $filename;
+                        if (move_uploaded_file($file['tmp_name'], $destinationPath)) {
+                            if ($poster) {
+                                $oldPath = __DIR__ . '/uploads/' . $poster;
+                                if (file_exists($oldPath)) {
+                                    unlink($oldPath);
+                                }
+                            }
+                            $stmt2 = $db->prepare('UPDATE events SET poster=? WHERE id=?');
+                            $stmt2->bind_param('si', $filename, $id);
+                            $stmt2->execute();
+                        } else {
+                            $posterError = 'The poster could not be saved.';
+                        }
+                    }
+                }
+            }
+        }
+
+        if ($posterError) {
+            set_message($posterError);
+        } else {
+            set_message('Event updated.');
+            header('Location: admin_events.php');
+            exit;
+        }
     }
 }
 
@@ -91,7 +141,7 @@ require __DIR__ . '/includes/header.php';
     <h2>Edit Event</h2>
 
     <!-- Edit Event Form -->
-    <form method="post" class="form-card">
+    <form method="post" enctype="multipart/form-data" class="form-card">
         <label>
             Club
             <select name="club_id" required <?php echo !$isSuperAdmin ? 'disabled' : ''; ?>>
@@ -128,6 +178,18 @@ require __DIR__ . '/includes/header.php';
         <label>
             Ticket price
             <input name="ticket_price" type="number" min="0" step="0.01" value="<?php echo $event['ticket_price']; ?>" required>
+        </label>
+        <label>
+            Event poster
+            <?php if ($event['poster'] ?? null): ?>
+                <div class="image-preview">
+                    <img src="uploads/<?php echo htmlspecialchars($event['poster']); ?>" alt="Current poster">
+                </div>
+                <label style="display:block; margin-top:8px;">
+                    <input type="checkbox" name="remove_poster" value="1"> Remove current poster
+                </label>
+            <?php endif; ?>
+            <input name="poster" type="file" accept="image/jpeg,image/png,image/webp">
         </label>
         <button class="button">Save Changes</button>
     </form>

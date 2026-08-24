@@ -24,7 +24,15 @@ require __DIR__ . '/includes/header.php';
   <div class="grid">
     <?php if ($events && $events->num_rows) { while ($event = $events->fetch_assoc()) { ?>
       <article class="card">
-        <div class="card-image">EVENT</div>
+        <div class="card-image">
+          <?php if ($event['poster'] ?? null): ?>
+            <div class="img-zoom">
+              <img src="uploads/<?php echo htmlspecialchars($event['poster']); ?>" alt="<?php echo htmlspecialchars($event['title']); ?>" class="img-thumb">
+            </div>
+          <?php else: ?>
+            EVENT
+          <?php endif; ?>
+        </div>
         <p class="event-date"><?php echo date('d F Y · g:i A', strtotime($event['date'])); ?></p>
         <h3><?php echo htmlspecialchars($event['title']); ?></h3>
         <p><?php echo htmlspecialchars($event['venue']); ?> · <?php echo htmlspecialchars($event['club_name']); ?></p>
