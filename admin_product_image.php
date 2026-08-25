@@ -90,31 +90,31 @@ $products = $db->query($productsQuery);
 $page_title = 'Product Images | AIU Club Store';
 require __DIR__ . '/includes/header.php';
 ?>
-<main class="container section">
+<main class="container section admin-page">
     <p>
-        <a class="button dashboard-btn" href="admin.php">&larr; Dashboard</a>
+        <a class="button dashboard-btn" href="admin.php"><i class="fas fa-arrow-left"></i> Dashboard</a>
     </p>
     <h2>Upload Product Image</h2>
     <p>Use JPG, PNG, or WebP files up to 2 MB.</p>
  
     <!-- Upload Form -->
     <form id="product-image-form" method="post" enctype="multipart/form-data" class="form-card">
-        <label>
-            Product
-            <select name="product_id" required>
+        <div class="field">
+            <select id="product_id" name="product_id" required>
                 <?php while ($product = $products->fetch_assoc()) { ?>
                     <option value="<?php echo $product['id']; ?>">
                         <?php echo htmlspecialchars($product['name']); ?>
                     </option>
                 <?php } ?>
             </select>
-        </label>
-        <label>
-            Image file
-            <input id="image-input" type="file" name="image" accept="image/jpeg,image/png,image/webp" required>
-        </label>
+            <label for="product_id">Product</label>
+        </div>
+        <div class="field">
+            <input id="image-input" name="image" type="file" accept="image/jpeg,image/png,image/webp" required>
+            <label for="image-input">Image file</label>
+        </div>
         <div id="image-preview" class="image-preview" hidden></div>
-        <button class="button">Upload Image</button>
+        <button class="button button-primary" data-loading="Uploading...">Upload Image</button>
     </form>
 </main>
 <script>

@@ -134,64 +134,68 @@ $clubs = $db->query($clubsQuery);
 $page_title = 'Edit Event | AIU Club Store';
 require __DIR__ . '/includes/header.php';
 ?>
-<main class="container section">
+<main class="container section admin-page">
     <p>
-        <a class="text-link" href="admin_events.php">&larr; Events</a>
+        <a class="text-link" href="admin_events.php"><i class="fas fa-arrow-left"></i> Events</a>
     </p>
     <h2>Edit Event</h2>
 
     <!-- Edit Event Form -->
     <form method="post" enctype="multipart/form-data" class="form-card">
-        <label>
-            Club
-            <select name="club_id" required <?php echo !$isSuperAdmin ? 'disabled' : ''; ?>>
+        <div class="field">
+            <select id="club_id" name="club_id" required <?php echo !$isSuperAdmin ? 'disabled' : ''; ?>>
                 <?php while ($club = $clubs->fetch_assoc()) { ?>
                     <option value="<?php echo $club['id']; ?>" <?php echo $event['club_id'] == $club['id'] ? 'selected' : ''; ?>>
                         <?php echo htmlspecialchars($club['name']); ?>
                     </option>
                 <?php } ?>
             </select>
+            <label for="club_id">Club</label>
             <?php if (!$isSuperAdmin) { ?>
                 <input type="hidden" name="club_id" value="<?php echo (int) $event['club_id']; ?>">
             <?php } ?>
-        </label>
-        <label>
-            Title
-            <input name="title" value="<?php echo htmlspecialchars($event['title']); ?>" required>
-        </label>
-        <label>
-            Description
-            <textarea name="description"><?php echo htmlspecialchars($event['description']); ?></textarea>
-        </label>
-        <label>
-            Venue
-            <input name="venue" value="<?php echo htmlspecialchars($event['venue']); ?>" required>
-        </label>
-        <label>
-            Date and time
-            <input name="date" type="datetime-local" value="<?php echo date('Y-m-d\TH:i', strtotime($event['date'])); ?>" required>
-        </label>
-        <label>
-            Capacity
-            <input name="capacity" type="number" min="1" value="<?php echo $event['capacity']; ?>" required>
-        </label>
-        <label>
-            Ticket price
-            <input name="ticket_price" type="number" min="0" step="0.01" value="<?php echo $event['ticket_price']; ?>" required>
-        </label>
-        <label>
-            Event poster
+        </div>
+        <div class="field">
+            <input id="title" name="title" placeholder=" " value="<?php echo htmlspecialchars($event['title']); ?>" required>
+            <label for="title">Title</label>
+        </div>
+        <div class="field">
+            <textarea id="description" name="description" placeholder=" "><?php echo htmlspecialchars($event['description']); ?></textarea>
+            <label for="description">Description</label>
+        </div>
+        <div class="field">
+            <input id="venue" name="venue" placeholder=" " value="<?php echo htmlspecialchars($event['venue']); ?>" required>
+            <label for="venue">Venue</label>
+        </div>
+        <div class="field">
+            <input id="date" name="date" type="datetime-local" value="<?php echo date('Y-m-d\TH:i', strtotime($event['date'])); ?>" required>
+            <label for="date">Date and time</label>
+        </div>
+        <div class="field">
+            <input id="capacity" name="capacity" type="number" min="1" placeholder=" " value="<?php echo $event['capacity']; ?>" required>
+            <label for="capacity">Capacity</label>
+        </div>
+        <div class="field">
+            <input id="ticket_price" name="ticket_price" type="number" min="0" step="0.01" placeholder=" " value="<?php echo $event['ticket_price']; ?>" required>
+            <label for="ticket_price">Ticket price</label>
+        </div>
+        <div class="field">
             <?php if ($event['poster'] ?? null): ?>
                 <div class="image-preview">
                     <img src="uploads/<?php echo htmlspecialchars($event['poster']); ?>" alt="Current poster">
                 </div>
-                <label style="display:block; margin-top:8px;">
-                    <input type="checkbox" name="remove_poster" value="1"> Remove current poster
-                </label>
+                <div class="checkbox-field">
+                    <input type="checkbox" name="remove_poster" id="remove_poster" value="1">
+                    <label for="remove_poster" class="checkbox-label">Remove current poster</label>
+                </div>
             <?php endif; ?>
-            <input name="poster" type="file" accept="image/jpeg,image/png,image/webp">
-        </label>
-        <button class="button">Save Changes</button>
+            <input id="poster" name="poster" type="file" accept="image/jpeg,image/png,image/webp">
+            <label for="poster">Change poster</label>
+        </div>
+        <div class="form-actions">
+            <a class="button" href="admin_events.php"><i class="fas fa-times"></i> Cancel</a>
+            <button class="button button-primary" data-loading="Saving changes...">Save Changes</button>
+        </div>
     </form>
 </main>
 <?php require __DIR__ . '/includes/footer.php'; ?>

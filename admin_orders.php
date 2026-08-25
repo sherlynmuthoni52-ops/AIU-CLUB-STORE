@@ -176,9 +176,9 @@ $tickets = $db->query($ticketsQuery);
 $page_title = 'Orders and Payments | AIU Club Store';
 require __DIR__ . '/includes/header.php';
 ?>
-<main class="container section">
+<main class="container section admin-page">
     <p>
-        <a class="button dashboard-btn" href="admin.php">&larr; Dashboard</a>
+        <a class="button dashboard-btn" href="admin.php"><i class="fas fa-arrow-left"></i> Dashboard</a>
     </p>
 
     <!-- Merchandise Orders -->
@@ -202,31 +202,31 @@ require __DIR__ . '/includes/header.php';
                     <td>#<?php echo $order['id']; ?></td>
                     <td><?php echo htmlspecialchars($order['student_name']); ?></td>
                     <td>KES <?php echo number_format((float) $order['total_amount'], 2); ?></td>
-                    <td>
-                        <select name="payment_status" form="<?php echo $formId; ?>">
-                            <?php foreach (['pending', 'paid', 'failed', 'refunded'] as $status) { ?>
-                                <option value="<?php echo $status; ?>" <?php echo $order['payment_status'] === $status ? 'selected' : ''; ?>>
-                                    <?php echo $status; ?>
-                                </option>
-                            <?php } ?>
-                        </select>
-                    </td>
-                    <td>
-                        <select name="order_status" form="<?php echo $formId; ?>">
-                            <?php foreach (['pending', 'processing', 'ready', 'completed', 'cancelled'] as $status) { ?>
-                                <option value="<?php echo $status; ?>" <?php echo $order['order_status'] === $status ? 'selected' : ''; ?>>
-                                    <?php echo $status; ?>
-                                </option>
-                            <?php } ?>
-                        </select>
-                    </td>
-                    <td>
-                        <form id="<?php echo $formId; ?>" method="post" style="display:inline;">
-                            <input type="hidden" name="type" value="order">
-                            <input type="hidden" name="id" value="<?php echo $order['id']; ?>">
-                            <button type="submit" class="button">Save</button>
-                        </form>
-                    </td>
+                     <td>
+                         <select name="payment_status" form="<?php echo $formId; ?>" class="compact-select">
+                             <?php foreach (['pending', 'paid', 'failed', 'refunded'] as $status) { ?>
+                                 <option value="<?php echo $status; ?>" <?php echo $order['payment_status'] === $status ? 'selected' : ''; ?>>
+                                     <?php echo $status; ?>
+                                 </option>
+                             <?php } ?>
+                         </select>
+                     </td>
+                     <td>
+                         <select name="order_status" form="<?php echo $formId; ?>" class="compact-select">
+                             <?php foreach (['pending', 'processing', 'ready', 'completed', 'cancelled'] as $status) { ?>
+                                 <option value="<?php echo $status; ?>" <?php echo $order['order_status'] === $status ? 'selected' : ''; ?>>
+                                     <?php echo $status; ?>
+                                 </option>
+                             <?php } ?>
+                         </select>
+                     </td>
+                     <td>
+                         <form id="<?php echo $formId; ?>" method="post" class="inline-form">
+                             <input type="hidden" name="type" value="order">
+                             <input type="hidden" name="id" value="<?php echo $order['id']; ?>">
+                             <button type="submit" class="button button-sm" data-loading="Saving...">Save</button>
+                         </form>
+                     </td>
                 </tr>
             <?php } ?>
         </tbody>
@@ -253,34 +253,38 @@ require __DIR__ . '/includes/header.php';
                     <td><?php echo htmlspecialchars($ticket['event_title']); ?></td>
                     <td><?php echo htmlspecialchars($ticket['student_name']); ?></td>
                     <td><?php echo htmlspecialchars($ticket['ticket_code']); ?></td>
-                    <td>
-                        <select name="payment_status" form="<?php echo $formId; ?>">
-                            <?php foreach (['pending', 'paid', 'failed', 'refunded'] as $status) { ?>
-                                <option value="<?php echo $status; ?>" <?php echo $ticket['payment_status'] === $status ? 'selected' : ''; ?>>
-                                    <?php echo $status; ?>
-                                </option>
-                            <?php } ?>
-                        </select>
-                    </td>
-                    <td>
-                        <?php echo $ticket['checked_in'] ? 'Yes' : 'No'; ?>
-                    </td>
-                    <td>
-                        <form id="<?php echo $formId; ?>" method="post" style="display:inline;">
-                            <input type="hidden" name="type" value="ticket">
-                            <input type="hidden" name="id" value="<?php echo $ticket['id']; ?>">
-                            <button type="submit" class="button">Save</button>
-                        </form>
-                    </td>
+                     <td>
+                         <select name="payment_status" form="<?php echo $formId; ?>" class="compact-select">
+                             <?php foreach (['pending', 'paid', 'failed', 'refunded'] as $status) { ?>
+                                 <option value="<?php echo $status; ?>" <?php echo $ticket['payment_status'] === $status ? 'selected' : ''; ?>>
+                                     <?php echo $status; ?>
+                                 </option>
+                             <?php } ?>
+                         </select>
+                     </td>
+                     <td>
+                         <?php if ($ticket['checked_in']) { ?>
+                             <span class="badge status-completed">Yes</span>
+                         <?php } else { ?>
+                             <span class="badge status-pending">No</span>
+                         <?php } ?>
+                     </td>
+                     <td>
+                         <form id="<?php echo $formId; ?>" method="post" class="inline-form">
+                             <input type="hidden" name="type" value="ticket">
+                             <input type="hidden" name="id" value="<?php echo $ticket['id']; ?>">
+                             <button type="submit" class="button button-sm" data-loading="Saving...">Save</button>
+                         </form>
+                     </td>
                 </tr>
             <?php } ?>
         </tbody>
     </table>
 </main>
 <script>
-    // Pop-up confirmation when redirected after a successful save.
+    // Show a toast notification when redirected after a successful save.
     if (new URLSearchParams(window.location.search).has('saved')) {
-        alert('Changes saved successfully!');
+        ToastSystem.show('Changes saved successfully!', 'success');
         var url = new URL(window.location);
         url.searchParams.delete('saved');
         window.history.replaceState({}, '', url);

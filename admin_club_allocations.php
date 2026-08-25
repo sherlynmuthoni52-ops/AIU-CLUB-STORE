@@ -134,9 +134,9 @@ if ($hasClubAdminsTable) {
 $page_title = 'Club Allocations | AIU Club Store';
 require __DIR__ . '/includes/header.php';
 ?>
-<main class="container section">
+<main class="container section admin-page">
     <p>
-        <a class="button dashboard-btn" href="admin.php">&larr; Dashboard</a>
+        <a class="button dashboard-btn" href="admin.php"><i class="fas fa-arrow-left"></i> Dashboard</a>
     </p>
     <h2>Club Allocations</h2>
     <p>Assign club administrators to clubs. Each club admin manages their allocated club(s).</p>
@@ -152,9 +152,8 @@ require __DIR__ . '/includes/header.php';
         <h3>Allocate Club to Admin</h3>
         <form method="post" class="form-card">
             <input type="hidden" name="action" value="allocate">
-            <label>
-                Club Admin
-                <select name="user_id" required>
+            <div class="field">
+                <select id="user_id" name="user_id" required>
                     <option value="">Select admin</option>
                     <?php while ($admin = $clubAdmins->fetch_assoc()) { ?>
                         <option value="<?php echo $admin['id']; ?>">
@@ -162,10 +161,10 @@ require __DIR__ . '/includes/header.php';
                         </option>
                     <?php } ?>
                 </select>
-            </label>
-            <label>
-                Club
-                <select name="club_id" required>
+                <label for="user_id">Club Admin</label>
+            </div>
+            <div class="field">
+                <select id="club_id" name="club_id" required>
                     <option value="">Select club</option>
                     <?php while ($club = $clubs->fetch_assoc()) { ?>
                         <option value="<?php echo $club['id']; ?>">
@@ -173,8 +172,9 @@ require __DIR__ . '/includes/header.php';
                         </option>
                     <?php } ?>
                 </select>
-            </label>
-            <button class="button">Allocate Club</button>
+                <label for="club_id">Club</label>
+            </div>
+            <button class="button button-primary" data-loading="Allocating...">Allocate Club</button>
         </form>
 
         <!-- Current Allocations -->
@@ -194,7 +194,7 @@ require __DIR__ . '/includes/header.php';
                             <td><?php echo htmlspecialchars($alloc['admin_name']); ?></td>
                             <td><?php echo htmlspecialchars($alloc['club_name']); ?></td>
                             <td>
-                                <form method="post" style="display:inline;" onsubmit="return confirm('Remove this allocation?');">
+                                <form method="post" class="inline-form" onsubmit="return confirm('Remove this allocation?');">
                                     <input type="hidden" name="action" value="remove">
                                     <input type="hidden" name="user_id" value="<?php echo (int) $alloc['user_id']; ?>">
                                     <input type="hidden" name="club_id" value="<?php echo (int) $alloc['club_id']; ?>">

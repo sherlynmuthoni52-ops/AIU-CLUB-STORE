@@ -37,5 +37,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $page_title = 'Ticket Check-in | AIU Club Store';
 require __DIR__ . '/includes/header.php';
 ?>
-<main class="container section"><p><a class="text-link" href="admin.php">&larr; Dashboard</a></p><h2>Ticket Check-in</h2><p>Enter the unique ticket code shown by the student.</p><form method="post" class="form-card"><label>Ticket code<input name="ticket_code" placeholder="AIU-2026-XXXXXXXX" required autofocus></label><button class="button">Verify Ticket</button></form><?php if ($ticket) { ?><article class="card"><h3><?php echo htmlspecialchars($ticket['title']); ?></h3><p>Student: <?php echo htmlspecialchars($ticket['student_name']); ?></p><p>Venue: <?php echo htmlspecialchars($ticket['venue']); ?></p><p>Date: <?php echo date('d M Y g:i A', strtotime($ticket['date'])); ?></p><p>Ticket: <strong><?php echo htmlspecialchars($ticket['ticket_code']); ?></strong></p><p>Entry status: <strong><?php echo $ticket['checked_in'] ? 'Checked in' : 'Not checked in'; ?></strong></p></article><?php } ?></main>
+<main class="container section admin-page">
+    <p>
+        <a class="text-link" href="admin.php"><i class="fas fa-arrow-left"></i> Dashboard</a>
+    </p>
+    <h2>Ticket Check-in</h2>
+    <p>Enter the unique ticket code shown by the student.</p>
+
+    <form method="post" class="form-card" id="checkin-form">
+        <div class="field">
+            <input id="ticket_code" name="ticket_code" placeholder="AIU-2026-XXXXXXXX" required autofocus>
+            <label for="ticket_code">Ticket code</label>
+        </div>
+        <button class="button button-primary" data-loading="Verifying ticket...">Verify Ticket</button>
+    </form>
+
+    <?php if ($ticket) { ?>
+        <article class="card">
+            <h3><?php echo htmlspecialchars($ticket['title']); ?></h3>
+            <p><strong>Student:</strong> <?php echo htmlspecialchars($ticket['student_name']); ?></p>
+            <p><strong>Venue:</strong> <?php echo htmlspecialchars($ticket['venue']); ?></p>
+            <p><strong>Date:</strong> <?php echo date('d M Y g:i A', strtotime($ticket['date'])); ?></p>
+            <p><strong>Ticket code:</strong> <code><?php echo htmlspecialchars($ticket['ticket_code']); ?></code></p>
+            <p><strong>Entry status:</strong>
+                <?php if ($ticket['checked_in']) { ?>
+                    <span class="badge status-completed">Checked in</span>
+                <?php } else { ?>
+                    <span class="badge status-pending">Not checked in</span>
+                <?php } ?>
+            </p>
+        </article>
+    <?php } ?>
+</main>
 <?php require __DIR__ . '/includes/footer.php'; ?>

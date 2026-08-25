@@ -5,6 +5,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?php echo htmlspecialchars($page_title ?? 'AIU Club Store'); ?></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
@@ -30,5 +33,20 @@
       <?php } ?>
     </div>
   </nav>
-  <?php if ($message = pull_message()) { ?><p class="flash container"><?php echo htmlspecialchars($message); ?></p><?php } ?>
+  <?php if ($message = pull_message()) {
+    $flashType = 'info';
+    if (preg_match('/error|fail|cannot|denied|not found|invalid/i', $message)) {
+      $flashType = 'error';
+    } elseif (preg_match('/success|added|saved|updated|deleted|confirmed/i', $message)) {
+      $flashType = 'success';
+    }
+    $flashClass = $flashType === 'error' ? 'flash error' : ($flashType === 'success' ? 'flash success' : 'flash');
+    ?>
+    <div class="container" style="margin-top: 16px;">
+      <div class="<?php echo $flashClass; ?>">
+        <i class="fas fa-<?php echo $flashType === 'error' ? 'exclamation-circle' : ($flashType === 'success' ? 'check-circle' : 'info-circle'); ?>"></i>
+        <?php echo htmlspecialchars($message); ?>
+      </div>
+    </div>
+  <?php } ?>
 

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * AIU Club Store - Admin Dashboard
  *
@@ -58,7 +58,7 @@ if (current_user()['role'] === 'super_admin' && table_exists($db, 'club_admins')
 $page_title = 'Admin Dashboard | AIU Club Store';
 require __DIR__ . '/includes/header.php';
 ?>
-<main class="container section">
+<main class="container section admin-page">
     <p>
         <a class="button dashboard-btn" href="admin.php">&larr; Dashboard</a>
     </p>
@@ -81,7 +81,7 @@ require __DIR__ . '/includes/header.php';
     <p>
         <a class="button allocations-btn" href="admin_club_allocations.php">Manage Allocations</a>
     </p>
-        <div class="grid">
+        <div class="grid summary-grid">
             <article class="card">
                 <h3>Allocated Clubs</h3>
                 <p class="price"><?php echo $clubAllocations ? $clubAllocations->num_rows : 0; ?></p>
@@ -112,19 +112,19 @@ require __DIR__ . '/includes/header.php';
         <?php } ?>
     <?php } ?>
 
-    <!-- Admin Management Links -->
-    <h3>Management</h3>
-    <p class="admin-management">
-        <?php if (current_user()['role'] === 'super_admin') { ?>
-            <a class="button manage-btn" href="admin_clubs.php">Clubs</a>
-            <a class="button manage-btn" href="admin_users.php">Users &amp; Roles</a>
-        <?php } ?>
-        <a class="button manage-btn" href="admin_products.php">Products &amp; Sizes</a>
-        <a class="button manage-btn" href="admin_product_image.php">Product Images</a>
-        <a class="button manage-btn" href="admin_events.php">Events</a>
-        <a class="button manage-btn" href="admin_orders.php">Orders &amp; Payments</a>
-        <a class="button manage-btn" href="admin_reports.php">Reports</a>
-        <a class="button manage-btn" href="ticket_checkin.php">Ticket Check-in</a>
-    </p>
+     <!-- Admin Management Links -->
+     <h3>Management</h3>
+     <nav class="admin-management" aria-label="Admin sections">
+         <?php if (current_user()['role'] === 'super_admin') { ?>
+             <a class="button manage-btn" href="admin_clubs.php"><i class="fas fa-shield-alt"></i> Clubs</a>
+             <a class="button manage-btn" href="admin_users.php"><i class="fas fa-users"></i> Users &amp; Roles</a>
+         <?php } ?>
+         <a class="button manage-btn" href="admin_products.php"><i class="fas fa-box"></i> Products &amp; Sizes</a>
+         <a class="button manage-btn" href="admin_product_image.php"><i class="fas fa-image"></i> Product Images</a>
+         <a class="button manage-btn" href="admin_events.php"><i class="fas fa-calendar-alt"></i> Events</a>
+         <a class="button manage-btn" href="admin_orders.php"><i class="fas fa-receipt"></i> Orders &amp; Payments</a>
+         <a class="button manage-btn" href="admin_reports.php"><i class="fas fa-chart-bar"></i> Reports</a>
+         <a class="button manage-btn" href="ticket_checkin.php"><i class="fas fa-qrcode"></i> Ticket Check-in</a>
+     </nav>
 </main>
 <?php require __DIR__ . '/includes/footer.php'; ?>

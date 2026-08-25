@@ -83,23 +83,23 @@ $sizes = $db->query('SELECT * FROM product_sizes WHERE product_id=' . (int) $pro
 $page_title = 'Product Sizes | AIU Club Store';
 require __DIR__ . '/includes/header.php';
 ?>
-<main class="container section">
+<main class="container section admin-page">
     <p>
-        <a class="text-link" href="admin_products.php">&larr; Products</a>
+        <a class="text-link" href="admin_products.php"><i class="fas fa-arrow-left"></i> Products</a>
     </p>
     <h2>Sizes: <?php echo htmlspecialchars($product['name']); ?></h2>
 
     <!-- Add Size Form -->
     <form method="post" class="form-card">
-        <label>
-            Size
-            <input name="size" placeholder="e.g. M" required>
-        </label>
-        <label>
-            Stock
-            <input name="stock" type="number" min="0" required>
-        </label>
-        <button class="button" name="action" value="add">Add Size</button>
+        <div class="field">
+            <input id="size" name="size" placeholder="e.g. Medium" required>
+            <label for="size">Size</label>
+        </div>
+        <div class="field">
+            <input id="stock" name="stock" type="number" min="0" required>
+            <label for="stock">Stock</label>
+        </div>
+        <button class="button button-primary" name="action" value="add" data-loading="Adding size...">Add Size</button>
     </form>
 
     <!-- Sizes List -->
@@ -117,14 +117,14 @@ require __DIR__ . '/includes/header.php';
                     <td><?php echo htmlspecialchars($size['size']); ?></td>
                     <td><?php echo (int) $size['stock']; ?></td>
                     <td>
-                        <form method="post" style="display:inline;">
+                        <form method="post" class="inline-form">
                             <input type="hidden" name="size" value="<?php echo htmlspecialchars($size['size']); ?>">
                             <input type="hidden" name="stock" value="<?php echo (int) $size['stock']; ?>">
-                            <button type="submit" class="button" name="action" value="save">Save</button>
+                            <button type="submit" class="button button-sm" name="action" value="save">Save</button>
                         </form>
-                        <form method="post" style="display:inline;" onsubmit="return confirm('Delete this size?');">
+                        <form method="post" class="inline-form" onsubmit="return confirm('Delete this size?');">
                             <input type="hidden" name="size" value="<?php echo htmlspecialchars($size['size']); ?>">
-                            <button type="submit" class="button" name="action" value="delete">Delete</button>
+                            <button type="submit" class="button button-sm" name="action" value="delete">Delete</button>
                         </form>
                     </td>
                 </tr>

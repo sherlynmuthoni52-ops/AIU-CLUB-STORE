@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * AIU Club Store - Manage Products
  *
@@ -109,9 +109,9 @@ $products = $db->query($productsQuery);
 $page_title = 'Manage Products | AIU Club Store';
 require __DIR__ . '/includes/header.php';
 ?>
-<main class="container section">
+<main class="container section admin-page">
     <p>
-        <a class="button dashboard-btn" href="admin.php">&larr; Dashboard</a>
+        <a class="button dashboard-btn" href="admin.php"><i class="fas fa-arrow-left"></i> Dashboard</a>
     </p>
     <h2><?php echo $editing ? 'Edit Product' : 'Add Product'; ?></h2>
 
@@ -119,38 +119,43 @@ require __DIR__ . '/includes/header.php';
     <form method="post" class="form-card">
         <input type="hidden" name="action" value="save">
         <input type="hidden" name="id" value="<?php echo (int) ($editing['id'] ?? 0); ?>">
-        <label>
-            Club
-            <select name="club_id" required <?php echo !$isSuperAdmin ? 'disabled' : ''; ?>>
+        <div class="field">
+            <select id="club_id" name="club_id" required <?php echo !$isSuperAdmin ? 'disabled' : ''; ?>>
                 <?php while ($club = $clubs->fetch_assoc()) { ?>
                     <option value="<?php echo $club['id']; ?>" <?php echo (($editing['club_id'] ?? 0) == $club['id']) ? 'selected' : ''; ?>>
                         <?php echo htmlspecialchars($club['name']); ?>
                     </option>
                 <?php } ?>
             </select>
+            <label for="club_id">Club</label>
             <?php if (!$isSuperAdmin) { ?>
                 <input type="hidden" name="club_id" value="<?php echo (int) ($editing['club_id'] ?? $managedClubIds[0] ?? 0); ?>">
             <?php } ?>
-        </label>
-        <label>
-            Product name
-            <input name="name" value="<?php echo htmlspecialchars($editing['name'] ?? ''); ?>" required>
-        </label>
-        <label>
-            Price (KES)
-            <input name="price" type="number" min="0" step="0.01" value="<?php echo htmlspecialchars($editing['price'] ?? ''); ?>" required>
-        </label>
-        <label>
-            Stock
-            <input name="stock" type="number" min="0" value="<?php echo htmlspecialchars($editing['stock'] ?? '0'); ?>" required>
-        </label>
-        <label>
-            Category
-            <input name="category" value="<?php echo htmlspecialchars($editing['category'] ?? ''); ?>" required>
-        </label>
-        <button class="button">
-            <?php echo $editing ? 'Save Changes' : 'Add Product'; ?>
-        </button>
+        </div>
+        <div class="field">
+            <input id="name" name="name" placeholder=" " value="<?php echo htmlspecialchars($editing['name'] ?? ''); ?>" required>
+            <label for="name">Product name</label>
+        </div>
+        <div class="field">
+            <input id="price" name="price" type="number" min="0" step="0.01" placeholder=" " value="<?php echo htmlspecialchars($editing['price'] ?? ''); ?>" required>
+            <label for="price">Price (KES)</label>
+        </div>
+        <div class="field">
+            <input id="stock" name="stock" type="number" min="0" placeholder=" " value="<?php echo htmlspecialchars($editing['stock'] ?? '0'); ?>" required>
+            <label for="stock">Stock</label>
+        </div>
+        <div class="field">
+            <input id="category" name="category" placeholder=" " value="<?php echo htmlspecialchars($editing['category'] ?? ''); ?>" required>
+            <label for="category">Category</label>
+        </div>
+        <div class="form-actions">
+            <?php if ($editing) { ?>
+                <a class="button" href="admin_products.php"><i class="fas fa-times"></i> Cancel</a>
+            <?php } ?>
+            <button class="button button-primary" data-loading="Saving product...">
+                <?php echo $editing ? 'Save Changes' : 'Add Product'; ?>
+            </button>
+        </div>
     </form>
 
     <!-- Products List -->
@@ -175,7 +180,7 @@ require __DIR__ . '/includes/header.php';
                     <td>
                         <a class="text-link" href="admin_products.php?edit=<?php echo $product['id']; ?>">Edit</a>
                         <a class="text-link" href="admin_sizes.php?product_id=<?php echo $product['id']; ?>">Sizes</a>
-                        <form method="post" style="display:inline;" onsubmit="return confirm('Delete this product?');">
+                        <form method="post" class="inline-form" onsubmit="return confirm('Delete this product?');">
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="id" value="<?php echo $product['id']; ?>">
                             <button class="text-link">Delete</button>

@@ -61,14 +61,14 @@ $bestProducts = $db->query(
 $page_title = 'Reports | AIU Club Store';
 require __DIR__ . '/includes/header.php';
 ?>
-<main class="container section">
+<main class="container section admin-page">
     <p>
-        <a class="button dashboard-btn" href="admin.php">&larr; Dashboard</a>
+        <a class="button dashboard-btn" href="admin.php"><i class="fas fa-arrow-left"></i> Dashboard</a>
     </p>
     <h2>Sales and Attendance Reports</h2>
 
     <!-- Sales Summary Cards -->
-    <div class="grid">
+    <div class="grid summary-grid">
         <article class="card">
             <h3>Paid Merchandise Sales</h3>
             <p class="price">KES <?php echo number_format((float) $sales['total'], 2); ?></p>

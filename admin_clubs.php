@@ -101,9 +101,9 @@ if ($result) {
 $page_title = 'Manage Clubs | AIU Club Store';
 require __DIR__ . '/includes/header.php';
 ?>
-<main class="container section">
+<main class="container section admin-page">
     <p>
-        <a class="button dashboard-btn" href="admin.php">&larr; Dashboard</a>
+        <a class="button dashboard-btn" href="admin.php"><i class="fas fa-arrow-left"></i> Dashboard</a>
     </p>
     <h2><?php echo $editing ? 'Edit Club' : 'Add Club'; ?></h2>
 
@@ -111,15 +111,20 @@ require __DIR__ . '/includes/header.php';
     <form method="post" class="form-card">
         <input type="hidden" name="action" value="save">
         <input type="hidden" name="id" value="<?php echo (int) ($editing['id'] ?? 0); ?>">
-        <label>
-            Club name
-            <input name="name" value="<?php echo htmlspecialchars($editing['name'] ?? ''); ?>" required>
-        </label>
-        <label>
-            Description
-            <textarea name="description"><?php echo htmlspecialchars($editing['description'] ?? ''); ?></textarea>
-        </label>
-        <button class="button">Save Club</button>
+        <div class="field">
+            <input id="name" name="name" placeholder=" " value="<?php echo htmlspecialchars($editing['name'] ?? ''); ?>" required>
+            <label for="name">Club name</label>
+        </div>
+        <div class="field">
+            <textarea id="description" name="description" placeholder=" "><?php echo htmlspecialchars($editing['description'] ?? ''); ?></textarea>
+            <label for="description">Description</label>
+        </div>
+        <div class="form-actions">
+            <?php if ($editing) { ?>
+                <a class="button" href="admin_clubs.php"><i class="fas fa-times"></i> Cancel</a>
+            <?php } ?>
+            <button class="button button-primary" data-loading="Saving club...">Save Club</button>
+        </div>
     </form>
 
     <!-- Clubs List -->

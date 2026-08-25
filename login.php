@@ -113,9 +113,9 @@ require __DIR__ . '/includes/header.php';
     </div>
   </div>
 </main>
+<?php require __DIR__ . '/includes/footer.php'; ?>
 <?php if ($showLogoutPopup) { ?>
 <script>
-  alert('You have logged out.');
+  ToastSystem.show('You have logged out.', 'info');
 </script>
 <?php } ?>
-<?php require __DIR__ . '/includes/footer.php'; ?>

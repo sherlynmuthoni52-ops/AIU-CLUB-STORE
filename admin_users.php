@@ -69,9 +69,9 @@ $users = $db->query('SELECT id, name, email, role FROM users ORDER BY name');
 $page_title = 'Manage Users | AIU Club Store';
 require __DIR__ . '/includes/header.php';
 ?>
-<main class="container section">
+<main class="container section admin-page">
     <p>
-        <a class="button dashboard-btn" href="admin.php">&larr; Dashboard</a>
+        <a class="button dashboard-btn" href="admin.php"><i class="fas fa-arrow-left"></i> Dashboard</a>
     </p>
     <h2>Users and Roles</h2>
 
@@ -92,33 +92,30 @@ require __DIR__ . '/includes/header.php';
                 <tr>
                     <td><?php echo htmlspecialchars($user['name']); ?></td>
                     <td><?php echo htmlspecialchars($user['email']); ?></td>
-                    <td>
-                        <!-- The form attribute associates this select with the form below,
-                             even though the form lives in the next cell. This is valid HTML5
-                             and ensures the select's value is submitted with the form. -->
-                        <select name="role" form="<?php echo $formId; ?>">
-                            <?php foreach (['student', 'club_admin', 'super_admin'] as $role) { ?>
-                                <option value="<?php echo $role; ?>" <?php echo $user['role'] === $role ? 'selected' : ''; ?>>
-                                    <?php echo $role; ?>
-                                </option>
-                            <?php } ?>
-                        </select>
-                    </td>
-                    <td>
-                        <form id="<?php echo $formId; ?>" method="post" style="display:inline;">
-                            <input type="hidden" name="id" value="<?php echo $user['id']; ?>">
-                            <button type="submit" class="button">Save</button>
-                        </form>
-                    </td>
+                     <td>
+                         <select name="role" form="<?php echo $formId; ?>" class="compact-select">
+                             <?php foreach (['student', 'club_admin', 'super_admin'] as $role) { ?>
+                                 <option value="<?php echo $role; ?>" <?php echo $user['role'] === $role ? 'selected' : ''; ?>>
+                                     <?php echo ucfirst(str_replace('_', ' ', $role)); ?>
+                                 </option>
+                             <?php } ?>
+                         </select>
+                     </td>
+                     <td>
+                         <form id="<?php echo $formId; ?>" method="post" class="inline-form">
+                             <input type="hidden" name="id" value="<?php echo $user['id']; ?>">
+                             <button type="submit" class="button button-sm" data-loading="Saving...">Save</button>
+                         </form>
+                     </td>
                 </tr>
             <?php } ?>
         </tbody>
     </table>
 </main>
 <script>
-    // Show a pop-up confirming the save when redirected after a successful update.
+    // Show a toast notification when redirected after a successful update.
     if (new URLSearchParams(window.location.search).has('saved')) {
-        alert('Changes saved successfully!');
+        ToastSystem.show('Changes saved successfully!', 'success');
         // Clean up the URL parameter without reloading the page.
         const url = new URL(window.location);
         url.searchParams.delete('saved');

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * AIU Club Store - Manage Events
  *
@@ -135,57 +135,57 @@ $events = $db->query($eventsQuery);
 $page_title = 'Manage Events | AIU Club Store';
 require __DIR__ . '/includes/header.php';
 ?>
-<main class="container section">
+<main class="container section admin-page">
     <p>
-        <a class="button dashboard-btn" href="admin.php">&larr; Dashboard</a>
+        <a class="button dashboard-btn" href="admin.php"><i class="fas fa-arrow-left"></i> Dashboard</a>
     </p>
     <h2>Add Event</h2>
 
     <!-- Add Event Form -->
     <form method="post" enctype="multipart/form-data" class="form-card">
         <input type="hidden" name="action" value="save">
-        <label>
-            Club
-            <select name="club_id" required <?php echo !$isSuperAdmin ? 'disabled' : ''; ?>>
+        <div class="field">
+            <select id="club_id" name="club_id" required <?php echo !$isSuperAdmin ? 'disabled' : ''; ?>>
                 <?php while ($club = $clubs->fetch_assoc()) { ?>
                     <option value="<?php echo $club['id']; ?>">
                         <?php echo htmlspecialchars($club['name']); ?>
                     </option>
                 <?php } ?>
             </select>
+            <label for="club_id">Club</label>
             <?php if (!$isSuperAdmin) { ?>
                 <input type="hidden" name="club_id" value="<?php echo (int) ($managedClubIds[0] ?? 0); ?>">
             <?php } ?>
-        </label>
-        <label>
-            Title
-            <input name="title" required>
-        </label>
-        <label>
-            Description
-            <textarea name="description"></textarea>
-        </label>
-        <label>
-            Venue
-            <input name="venue" required>
-        </label>
-        <label>
-            Date and time
-            <input name="date" type="datetime-local" required>
-        </label>
-        <label>
-            Capacity
-            <input name="capacity" type="number" min="1" required>
-        </label>
-        <label>
-            Ticket price
-            <input name="ticket_price" type="number" min="0" step="0.01" value="0" required>
-        </label>
-        <label>
-            Event poster
-            <input name="poster" type="file" accept="image/jpeg,image/png,image/webp">
-        </label>
-        <button class="button">Add Event</button>
+        </div>
+        <div class="field">
+            <input id="title" name="title" placeholder=" " required>
+            <label for="title">Title</label>
+        </div>
+        <div class="field">
+            <textarea id="description" name="description" placeholder=" "></textarea>
+            <label for="description">Description</label>
+        </div>
+        <div class="field">
+            <input id="venue" name="venue" placeholder=" " required>
+            <label for="venue">Venue</label>
+        </div>
+        <div class="field">
+            <input id="date" name="date" type="datetime-local" required>
+            <label for="date">Date and time</label>
+        </div>
+        <div class="field">
+            <input id="capacity" name="capacity" type="number" min="1" placeholder=" " required>
+            <label for="capacity">Capacity</label>
+        </div>
+        <div class="field">
+            <input id="ticket_price" name="ticket_price" type="number" min="0" step="0.01" value="0" placeholder=" " required>
+            <label for="ticket_price">Ticket price</label>
+        </div>
+        <div class="field">
+            <input id="poster" name="poster" type="file" accept="image/jpeg,image/png,image/webp">
+            <label for="poster">Event poster</label>
+        </div>
+        <button class="button button-primary" data-loading="Adding event...">Add Event</button>
     </form>
 
     <!-- Events List -->
@@ -213,7 +213,7 @@ require __DIR__ . '/includes/header.php';
                     <td><?php echo $event['capacity']; ?></td>
                     <td>
                         <a class="text-link" href="admin_events_edit.php?id=<?php echo $event['id']; ?>">Edit</a>
-                        <form method="post" style="display:inline;" onsubmit="return confirm('Delete this event?');">
+                        <form method="post" class="inline-form" onsubmit="return confirm('Delete this event?');">
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="id" value="<?php echo $event['id']; ?>">
                             <button class="text-link">Delete</button>

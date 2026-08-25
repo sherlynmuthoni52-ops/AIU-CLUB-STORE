@@ -73,18 +73,22 @@ a {
    Welcome Banner
    ============================================ */
 .welcome-banner {
-  background: var(--red);
+  background: linear-gradient(135deg, var(--red), var(--red-hover));
   color: #fff;
-  padding: 10px 7%;
+  padding: 12px 7%;
   text-align: center;
   font-size: 0.95rem;
+  font-weight: 500;
+  backdrop-filter: blur(10px);
 }
 .welcome-banner .user-name {
   font-weight: 700;
+  color: #fff;
 }
 .welcome-banner .user-role {
   text-transform: capitalize;
   opacity: 0.9;
+  font-weight: 600;
 }
 
 /* ============================================
@@ -97,17 +101,26 @@ a {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  box-shadow: 0 2px 12px rgba(10, 17, 40, 0.15);
+  font-weight: 500;
 }
 
 .brand {
   font-size: 1.2rem;
   font-weight: 800;
+  color: #fff;
 }
 
 .nav-links {
   display: flex;
   gap: 20px;
   align-items: center;
+  font-weight: 500;
+}
+
+.nav-links a {
+  color: #e2e8f0;
+  transition: color 200ms ease;
 }
 
 .nav-links a:hover {
@@ -133,6 +146,28 @@ a {
   font-size: 1.15rem;
   max-width: 650px;
   margin: 18px auto 30px;
+}
+
+.hero .button {
+  background: var(--card-bg);
+  color: var(--navy);
+  border-color: var(--card-bg);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.hero .button.outline {
+  background: transparent;
+  color: #fff;
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+}
+
+.hero .button.outline:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: #fff;
+}
+
+.hero .button:hover {
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.4);
 }
 
 /* ============================================
@@ -176,7 +211,7 @@ a {
 .button.outline {
   background: transparent;
   color: #fff;
-  border: 1px solid #eb1e1e;
+  border: 1px solid var(--red);
   margin-left: 8px;
 }
 
@@ -247,10 +282,11 @@ a {
   cursor: pointer;
 }
 
-/* --- Summary card accent --- */
-.summary-grid .card {
-  background: #fff5f5;
-}
+/* --- Summary card accents --- */
+.summary-grid .card:nth-child(1) { border-left: 4px solid var(--red); }
+.summary-grid .card:nth-child(2) { border-left: 4px solid var(--gold); }
+.summary-grid .card:nth-child(3) { border-left: 4px solid var(--border-focus); }
+.summary-grid .card:nth-child(4) { border-left: 4px solid var(--success); }
 
 /* --- Club allocations button --- */
 .button.allocations-btn {
@@ -270,10 +306,18 @@ a {
 }
 
 /* Admin dashboard management link group spacing */
-.admin-management p {
+.admin-management {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.admin-management a.button {
+  flex: 1 1 160px;
+  min-width: 0;
+  justify-content: center;
+  text-align: center;
 }
 
 /* ============================================
@@ -432,7 +476,7 @@ a {
   letter-spacing: 0.5px;
   padding: 14px;
   text-align: left;
-  border-bottom: 2px solid #15233c30;
+  border-bottom: 2px solid rgba(10, 17, 40, 0.15);
 }
 
 .table th,
@@ -460,6 +504,17 @@ a {
   font-size: 1.2rem;
   font-weight: bold;
   margin-top: 18px;
+}
+
+/* Admin pages: left-align section headings for better visual hierarchy */
+.admin-page .section h2,
+.admin-page h2 {
+  text-align: left;
+  margin-bottom: 28px;
+}
+
+.admin-page .section h3 {
+  text-align: left;
 }
 
 /* ============================================
@@ -804,14 +859,53 @@ a {
   color: var(--border-focus);
 }
 
-.field input:not(:placeholder-shown):not(:focus) + label,
-.field textarea:not(:placeholder-shown):not(:focus) + label,
-.field select:not([value=""]) + label,
+/* Override: checkboxes don't use floating label styling */
+.field input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  accent-color: var(--red);
+}
+
+.field input[type="checkbox"] + label,
+.field input[type="checkbox"]:focus + label {
+  position: static;
+  top: 0;
+  left: 0;
+  transform: none;
+  font-size: 0.9rem;
+  padding: 0 0 0 8px;
+  background: none;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
 .field input:not(:placeholder-shown) + label,
-.field textarea:not(:placeholder-shown) + label {
+.field textarea:not(:placeholder-shown) + label,
+.field.filled select + label {
   top: -10px;
   font-size: 0.78rem;
   color: var(--ink-light);
+}
+
+.field.filled input + label,
+.field.filled textarea + label,
+.field.filled select + label {
+  top: -10px;
+  font-size: 0.78rem;
+}
+
+.field input:focus + label,
+.field textarea:focus + label,
+.field select:focus + label,
+.field.filled input:focus + label,
+.field.filled textarea:focus + label,
+.field.filled select:focus + label {
+  color: var(--border-focus);
 }
 
 .field input::placeholder,
@@ -829,12 +923,57 @@ a {
   appearance: none;
 }
 
-/* File input styling */
+/* Checkboxes (not floating-label style) */
+.checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 0;
+}
+
+.checkbox-field input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--red);
+  flex-shrink: 0;
+}
+
+.checkbox-label {
+  font-size: 0.9rem;
+  color: var(--ink);
+  cursor: pointer;
+  margin: 0;
+  position: static;
+  top: auto;
+  left: auto;
+  transform: none;
+}
+
+/* File input styling — label stays inline, no floating */
 .field input[type="file"] {
   padding: 10px;
   padding-top: 10px;
   background: var(--paper);
   border: 1.5px dashed var(--border);
+  cursor: pointer;
+  width: 100%;
+  font-size: 0.875rem;
+}
+
+.field input[type="file"] + label,
+.field input[type="file"]:focus + label,
+.field input[type="file"]:not(:placeholder-shown) + label {
+  position: static;
+  top: 0;
+  left: 0;
+  transform: none;
+  font-size: 0.9rem;
+  padding: 0;
+  background: none;
+  pointer-events: auto;
   cursor: pointer;
 }
 
@@ -850,9 +989,20 @@ a {
 
 /* Compact selects inside tables */
 .table .field select,
-.table select {
-  padding: 6px 10px;
-  font-size: 0.85rem;
+.table select,
+.compact-select {
+  padding: 4px 8px;
+  font-size: 0.825rem;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%239ca3af' d='M0 0l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+  background-size: 10px;
+  padding-right: 24px;
 }
 
 /* Full-width form buttons */
@@ -874,20 +1024,52 @@ a {
   color: var(--danger);
   font-size: 0.85rem;
   font-weight: 600;
-  margin-top: 6px;
-  margin-bottom: 4px;
+  margin-top: 4px;
 }
 
-.field-error .field input,
-.field-error .field textarea,
-.field-error .field select {
+.field .field-error {
+  margin-top: 4px;
+}
+
+.field .error input,
+.field .error textarea,
+.field .error select,
+.field .field-error + input,
+.field .field-error + textarea,
+.field .field-error + select {
   border-color: var(--danger);
 }
 
-.field-error .field input:focus,
-.field-error .field textarea:focus,
-.field-error .field select:focus {
+.field input.error,
+.field textarea.error,
+.field select.error {
+  border-color: var(--danger);
+}
+
+.field input.error:focus,
+.field textarea.error:focus,
+.field select.error:focus {
   box-shadow: 0 0 0 3px rgba(197, 48, 48, 0.12);
+}
+
+/* --- Button loading spinner --- */
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.button.loading {
+  pointer-events: none;
+  opacity: 0.7;
 }
 
 /* Responsive tweaks for booking form */
@@ -899,10 +1081,14 @@ a {
   .grid { gap: 14px; }
 }
 
-/* Apply to any grid container */
-.grid-container {
-  gap: 1rem;
-  -webkit-gap: 1rem;
+/* --- Inline form for table action buttons --- */
+.inline-form {
+  display: inline;
+}
+
+.inline-form button {
+  padding: 4px 10px;
+  font-size: 0.8rem;
 }
 
 /* ============================================
@@ -932,13 +1118,17 @@ a {
 }
 
 .input-group {
-  padding: 1% 0;
+  padding: 8px 0;
   position: relative;
 }
 
 .input-group i {
   position: absolute;
-  color: black;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ink-light);
+  font-size: 1.05rem;
 }
 
 .auth-container input[type="text"],
