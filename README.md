@@ -71,13 +71,14 @@ erDiagram
 2. Copy this project folder into `C:\xampp\htdocs\aiu-club-store`.
 3. Open phpMyAdmin at `http://localhost/phpmyadmin`.
 4. Create a new database named `aiu_club_store` (or import via phpMyAdmin UI).
-5. Import `database.sql` to create all tables, constraints, and seed initial clubs, products, sizes, events, and demo users.
-6. Verify `config/database.php` contains the correct MySQL credentials:
+5. Import `database.sql` to create the schema (tables, constraints, and indexes).
+6. Seed demo data by visiting `setup_database.php` in your browser. The app also runs this automatically on first load when the database is empty, creating demo clubs, products, events, and users.
+7. Verify `config/database.php` contains the correct MySQL credentials:
    - Host: `localhost`
    - Database: `aiu_club_store`
    - Username: `root`
    - Password: `` (empty for default XAMPP)
-7. Open `http://localhost/aiu-club-store/index.php` in your browser.
+8. Open `http://localhost/aiu-club-store/index.php` in your browser.
 
 ## Basic Usage
 
@@ -121,7 +122,7 @@ aiu-club-store/
 ├── checkout.php                 # Merchandise checkout & stock reduction
 ├── config/
 │   └── database.php             # Database connection singleton
-├── database.sql                 # Schema + seed data
+├── database.sql                 # Schema definition
 ├── events.php                   # Event listing page
 ├── includes/
 │   ├── auth.php                 # Auth helpers & flash messages

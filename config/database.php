@@ -111,6 +111,41 @@ function verify_and_migrate(mysqli $conn, array $expectedTables, bool $autoRunSe
     }
 
     // -------------------------------------------------------------------------
+    // Seed demo data when the schema exists but has no user accounts.
+    // This keeps login functional even when the schema was created from
+    // database.sql (which is schema-only) instead of relying on the app to
+    // auto-run setup only when tables are entirely missing.
+    // -------------------------------------------------------------------------
+
+    if ($autoRunSetup) {
+        $userCountRes = $conn->query('SELECT COUNT(*) AS total FROM users');
+        $userCount = $userCountRes ? (int) $userCountRes->fetch_assoc()['total'] : 0;
+
+        if ($userCount === 0) {
+            $setupPath = __DIR__ . '/../setup_database.php';
+            if (is_file($setupPath) && is_readable($setupPath)) {
+                error_log('[DB_STARTUP] No users found; running setup script to seed demo data: ' . $setupPath);
+
+                $php = defined('PHP_BINARY') ? PHP_BINARY : 'php';
+                $cmd = escapeshellcmd($php) . ' ' . escapeshellarg($setupPath) . ' 2>&1';
+
+                $output = [];
+                $returnVar = 0;
+                @exec($cmd, $output, $returnVar);
+
+                error_log('[DB_STARTUP] setup_database.php (seed) exit code: ' . $returnVar);
+                if (!empty($output)) {
+                    foreach ($output as $line) {
+                        error_log('[DB_SETUP_OUTPUT] ' . $line);
+                    }
+                }
+            } else {
+                error_log('[DB_STARTUP] setup_database.php not found or not readable: ' . $setupPath);
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
     // Column-level migrations for existing databases
     // -------------------------------------------------------------------------
 
