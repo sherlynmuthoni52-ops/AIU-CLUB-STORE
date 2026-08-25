@@ -2,11 +2,26 @@
    CSS Custom Properties (Design Tokens)
    ============================================ */
 :root {
-  --navy: #000000;
-  --blue: #e3111f;
-  --gold: #ffffff;
-  --paper: #ffffff;
-  --ink: #000000;
+  /* Brand colors */
+  --red: #e3111f;
+  --red-hover: #b91c1c;
+  --gold: #c9a227;
+  --gold-hover: #a3851e;
+  --navy: #0a1128;
+  --navy-light: #1a2240;
+
+  /* Neutrals */
+  --paper: #f8f9fa;
+  --ink: #1a1a2e;
+  --ink-light: #6b7280;
+  --border: #e5e8ef;
+  --border-focus: #3182ce;
+
+  /* Semantic */
+  --card-bg: #ffffff;
+  --success: #2f855a;
+  --danger: #c53030;
+  --warning: #dd6b20;
 }
 
 /* ============================================
@@ -16,12 +31,30 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
   color: var(--ink);
   background: var(--paper);
 }
+
+h1, h2, h3, h4 {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-weight: 700;
+  color: var(--navy);
+  margin-top: 0;
+}
+
+h1 { font-size: 2rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.15rem; }
+h4 { font-size: 1rem; }
 
 a {
   color: inherit;
@@ -40,7 +73,7 @@ a {
    Welcome Banner
    ============================================ */
 .welcome-banner {
-  background: var(--blue);
+  background: var(--red);
   color: #fff;
   padding: 10px 7%;
   text-align: center;
@@ -78,14 +111,14 @@ a {
 }
 
 .nav-links a:hover {
-  color: var(--gold);
+  color: var(--card-bg);
 }
 
 /* ============================================
    Hero Section
    ============================================ */
 .hero {
-  background: linear-gradient(120deg, var(--navy), var(--blue));
+  background: linear-gradient(120deg, var(--navy), var(--red));
   color: #fff;
   padding: 85px 7%;
   text-align: center;
@@ -106,12 +139,38 @@ a {
    Buttons
    ============================================ */
 .button {
-  display: inline-block;
-  padding: 12px 20px;
-  border-radius: 6px;
-  background: var(--gold);
-  color: #202020;
-  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: 2px solid var(--card-bg);
+  background: var(--card-bg);
+  color: var(--navy);
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 200ms ease;
+  text-decoration: none;
+}
+
+.button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.button:active {
+  transform: translateY(0);
+}
+
+.button:disabled,
+.button[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .button.outline {
@@ -121,33 +180,66 @@ a {
   margin-left: 8px;
 }
 
+.button.outline:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.button-primary {
+  background: var(--red);
+  color: #fff;
+  border-color: var(--red);
+}
+
+.button-primary:hover {
+  background: var(--red-hover);
+  border-color: var(--red-hover);
+  box-shadow: 0 6px 18px rgba(227, 17, 31, 0.3);
+}
+
+.button-danger {
+  background: var(--danger);
+  color: #fff;
+  border-color: var(--danger);
+}
+
+.button-danger:hover {
+  background: #9b2c2c;
+  border-color: #9b2c2c;
+  box-shadow: 0 6px 18px rgba(197, 48, 48, 0.3);
+}
+
+.button-sm {
+  padding: 8px 16px;
+  font-size: 0.825rem;
+}
+
+/* --- Admin management link buttons --- */
 .button.manage-btn {
-  background: #fff;
-  color: #000;
-  border: 2px solid #d01a1a;
-  box-shadow: 0 2px 8px rgba(208, 26, 26, 0.12);
-  transition: background 200ms ease, color 200ms ease, border-color 200ms ease, transform 200ms ease, box-shadow 200ms ease;
+  background: var(--card-bg);
+  color: var(--navy);
+  border: 2px solid var(--red);
+  box-shadow: 0 2px 8px rgba(227, 17, 31, 0.12);
 }
 
 .button.manage-btn:hover {
-  background: #d01a1a;
+  background: var(--red);
   color: #fff;
-  border-color: #a01414;
+  border-color: var(--red-hover);
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(208, 26, 26, 0.25);
+  box-shadow: 0 6px 18px rgba(227, 17, 31, 0.25);
   cursor: pointer;
 }
 
+/* --- Dashboard back button --- */
 .button.dashboard-btn {
-  background: #fff;
-  color: #000;
-  border: 2px solid #3182ce;
+  background: var(--card-bg);
+  color: var(--navy);
+  border: 2px solid var(--border-focus);
   box-shadow: 0 2px 8px rgba(49, 130, 206, 0.15);
-  transition: background 200ms ease, color 200ms ease, border-color 200ms ease, transform 200ms ease, box-shadow 200ms ease;
 }
 
 .button.dashboard-btn:hover {
-  background: #3182ce;
+  background: var(--border-focus);
   color: #fff;
   border-color: #2b6cb0;
   transform: translateY(-2px);
@@ -155,22 +247,23 @@ a {
   cursor: pointer;
 }
 
+/* --- Summary card accent --- */
 .summary-grid .card {
   background: #fff5f5;
 }
 
+/* --- Club allocations button --- */
 .button.allocations-btn {
-  background: #fff;
-  color: #000;
-  border: 2px solid #c9a227;
+  background: var(--card-bg);
+  color: var(--navy);
+  border: 2px solid var(--gold);
   box-shadow: 0 2px 8px rgba(201, 162, 39, 0.15);
-  transition: background 200ms ease, color 200ms ease, border-color 200ms ease, transform 200ms ease, box-shadow 200ms ease;
 }
 
 .button.allocations-btn:hover {
-  background: #c9a227;
+  background: var(--gold);
   color: #fff;
-  border-color: #a3851e;
+  border-color: var(--gold-hover);
   transform: translateY(-2px);
   box-shadow: 0 6px 18px rgba(201, 162, 39, 0.35);
   cursor: pointer;
@@ -193,6 +286,19 @@ a {
 .section h2 {
   margin-top: 0;
   text-align: center;
+  margin-bottom: 28px;
+}
+
+.text-link {
+  color: var(--red);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 200ms ease;
+}
+
+.text-link:hover {
+  color: var(--red-hover);
+  text-decoration: underline;
 }
 
 /* ============================================
@@ -205,25 +311,47 @@ a {
 }
 
 .card {
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 3px 14px #15233c18;
-  padding: 20px;
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  padding: 24px;
   position: relative;
+  border: 1px solid var(--border);
+  transition: transform 250ms ease, box-shadow 250ms ease, border-color 250ms ease;
 }
 
 .card-image {
   height: 150px;
-  background: var(--blue);
+  background: var(--red);
   display: grid;
   place-items: center;
   color: #fff;
   font-size: 2.8rem;
-  margin: -20px -20px 16px;
+  margin: -24px -24px 20px;
   overflow: hidden;
   cursor: zoom-in;
-  border-radius: 10px 10px 0 0;
+  border-radius: 12px 12px 0 0;
   padding: 8px;
+}
+
+/* Summary cards get colored left accent borders */
+.summary-grid .card {
+  background: #fff5f5;
+  border-left: 4px solid var(--red);
+}
+
+.card h3 {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  color: var(--ink-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.card .price {
+  color: var(--red);
+  font-size: 2rem;
+  font-weight: 800;
 }
 
 /* ---------- Image Zoom: contained within card-image ---------- */
@@ -253,10 +381,10 @@ a {
 
 .image-preview {
   margin-top: 12px;
-  border: 1px solid #d7dce8;
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 8px;
-  background: #fafbfe;
+  background: var(--card-bg);
 }
 
 .image-preview img {
@@ -272,13 +400,13 @@ a {
    Price & Event Styles
    ============================================ */
 .price {
-  color: var(--blue);
+  color: var(--red);
   font-size: 1.1rem;
   font-weight: bold;
 }
 
 .event-date {
-  color: var(--blue);
+  color: var(--red);
   font-weight: bold;
 }
 
@@ -288,14 +416,43 @@ a {
 .table {
   width: 100%;
   border-collapse: collapse;
-  background: #fff;
+  background: var(--card-bg);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--border);
+}
+
+.table thead th {
+  background: var(--navy-light);
+  color: #fff;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+  padding: 14px;
+  text-align: left;
+  border-bottom: 2px solid #15233c30;
 }
 
 .table th,
 .table td {
   padding: 14px;
-  border-bottom: 1px solid #e5e8ef;
+  border-bottom: 1px solid var(--border);
   text-align: left;
+  color: var(--ink);
+}
+
+.table tbody tr:nth-child(even) {
+  background: var(--paper);
+}
+
+.table tbody tr:hover {
+  background: #f0f7ff;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
 }
 
 .total {
@@ -341,36 +498,100 @@ a {
 
 .badge {
   display: inline-block;
-  padding: 4px 8px;
+  padding: 4px 10px;
   border-radius: 999px;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 700;
   color: #fff;
-  background: #4a5568;
+  background: var(--ink-light);
 }
 
 .badge.tag {
-  background: #3182ce;
+  background: var(--border-focus);
   margin-right: 6px;
 }
 
 .badge.spots {
-  background: #dd6b20;
+  background: var(--warning);
 }
 
 .badge.free {
-  background: #2f855a;
+  background: var(--success);
+}
+
+.badge.allocated {
+  background: var(--success);
+}
+
+.badge.unallocated {
+  background: var(--danger);
+}
+
+.badge.payment-pending {
+  background: var(--warning);
+}
+
+.badge.payment-paid {
+  background: var(--success);
+}
+
+.badge.payment-failed {
+  background: var(--danger);
+}
+
+.badge.payment-refunded {
+  background: var(--ink-light);
+}
+
+.badge.status-pending {
+  background: var(--warning);
+}
+
+.badge.status-processing {
+  background: var(--border-focus);
+}
+
+.badge.status-ready {
+  background: var(--success);
+}
+
+.badge.status-completed {
+  background: var(--success);
+}
+
+.badge.status-cancelled {
+  background: var(--danger);
 }
 
 /* Flash message animation */
 .flash {
-  background: #3182ce;
+  background: var(--border-focus);
   color: #fff;
-  padding: 12px 20px;
-  border-radius: 6px;
+  padding: 14px 24px;
+  border-radius: 10px;
   margin: 16px 0;
   text-align: center;
   font-weight: 600;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  border: 1px solid transparent;
+  animation: fadeSlideIn 0.4s ease;
+}
+
+.flash.error {
+  background: var(--danger);
+}
+
+.flash.success {
+  background: var(--success);
+}
+
+.flash.warning {
+  background: var(--warning);
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .flash-message {
@@ -381,6 +602,92 @@ a {
 .flash-message.show {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Toast Notification */
+.toast-container {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 280px;
+  max-width: 420px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.925rem;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.15);
+  border: 1px solid transparent;
+  animation: slideInRight 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.toast.success {
+  background: var(--success);
+  border-color: #2c6b4b;
+}
+
+.toast.error {
+  background: var(--danger);
+  border-color: #9b2c2c;
+}
+
+.toast.info {
+  background: var(--border-focus);
+  border-color: #2b6cb0;
+}
+
+.toast.warning {
+  background: var(--warning);
+  border-color: #b4531c;
+}
+
+.toast i {
+  font-size: 1.1rem;
+}
+
+.toast-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 0 0 10px 10px;
+  animation: toastProgress 3s linear forwards;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+@keyframes toastProgress {
+  to { width: 0; }
 }
 
 /* Card hover and fade-in */
@@ -413,15 +720,174 @@ a {
   100% { transform: scale(1); }
 }
 
-/* Field error style */
-.field-error {
-  margin-top: 6px;
+/* ============================================
+   Form Card & Fields
+   ============================================ */
+
+.form-card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 32px;
+  margin-bottom: 32px;
+  border: 1px solid var(--border);
 }
 
-input[type="text"], input[type="email"], input[type="number"], select {
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #d1d5db;
+@media (max-width: 700px) {
+  .form-card {
+    padding: 24px;
+  }
+}
+
+.form-card h2 {
+  text-align: left;
+  margin-top: 0;
+  margin-bottom: 24px;
+  color: var(--navy);
+}
+
+.form-card .form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+/* --- Floating-label field wrapper --- */
+.field {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.field label {
+  position: absolute;
+  left: 16px;
+  top: 14px;
+  color: var(--ink-light);
+  font-size: 0.95rem;
+  font-weight: 500;
+  pointer-events: none;
+  transition: all 200ms ease;
+  background: var(--card-bg);
+  padding: 0 4px;
+  margin: 0;
+}
+
+.field input,
+.field textarea,
+.field select {
+  padding: 16px;
+  padding-top: 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: var(--ink);
+  background: var(--card-bg);
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.12);
+}
+
+.field input:focus + label,
+.field textarea:focus + label,
+.field select:focus + label {
+  top: -10px;
+  font-size: 0.78rem;
+  color: var(--border-focus);
+}
+
+.field input:not(:placeholder-shown):not(:focus) + label,
+.field textarea:not(:placeholder-shown):not(:focus) + label,
+.field select:not([value=""]) + label,
+.field input:not(:placeholder-shown) + label,
+.field textarea:not(:placeholder-shown) + label {
+  top: -10px;
+  font-size: 0.78rem;
+  color: var(--ink-light);
+}
+
+.field input::placeholder,
+.field textarea::placeholder {
+  color: transparent;
+}
+
+/* Select arrow styling */
+.field select {
+  padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='6' viewBox='0 0 12 6'%3E%3Cpath fill='%239ca3af' d='M0 0l6 6 6-6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 12px;
+  appearance: none;
+}
+
+/* File input styling */
+.field input[type="file"] {
+  padding: 10px;
+  padding-top: 10px;
+  background: var(--paper);
+  border: 1.5px dashed var(--border);
+  cursor: pointer;
+}
+
+.field input[type="file"]:focus {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px rgba(227, 17, 31, 0.12);
+}
+
+.field textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* Compact selects inside tables */
+.table .field select,
+.table select {
+  padding: 6px 10px;
+  font-size: 0.85rem;
+}
+
+/* Full-width form buttons */
+.form-card .button,
+.form-card button.button {
+  width: 100%;
+  justify-content: center;
+}
+
+@media (min-width: 701px) {
+  .form-card .form-actions .button,
+  .form-card .form-actions button.button {
+    width: auto;
+  }
+}
+
+/* --- Form validation error display --- */
+.field-error {
+  color: var(--danger);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: 6px;
+  margin-bottom: 4px;
+}
+
+.field-error .field input,
+.field-error .field textarea,
+.field-error .field select {
+  border-color: var(--danger);
+}
+
+.field-error .field input:focus,
+.field-error .field textarea:focus,
+.field-error .field select:focus {
+  box-shadow: 0 0 0 3px rgba(197, 48, 48, 0.12);
 }
 
 /* Responsive tweaks for booking form */
@@ -443,13 +909,14 @@ input[type="text"], input[type="email"], input[type="number"], select {
    Authentication Page Styles
    ============================================ */
 .auth-container {
-  background: #ffe6e6;
-  width: 450px;
+  background: var(--paper);
+  width: 460px;
   max-width: 90%;
-  padding: 1.5rem;
+  padding: 2rem;
   margin: 50px auto;
-  border-radius: 10px;
-  box-shadow: 0 20px 35px rgba(0,0,1,0.1);
+  border-radius: 14px;
+  box-shadow: 0 20px 40px rgba(10, 17, 40, 0.12);
+  border: 1px solid var(--border);
 }
 
 .auth-form {
@@ -481,13 +948,13 @@ input[type="text"], input[type="email"], input[type="number"], select {
   width: 100%;
   background-color: transparent;
   border: none;
-  border-bottom: 1px solid #757575;
+  border-bottom: 1px solid var(--border);
   padding-left: 1.5rem;
   font-size: 15px;
 }
 
 .auth-container input:focus {
-  border-bottom: 2px solid var(--blue);
+  border-bottom: 2px solid var(--red);
 }
 
 .auth-container input::placeholder {
@@ -495,7 +962,7 @@ input[type="text"], input[type="email"], input[type="number"], select {
 }
 
 .auth-container label {
-  color: #757575;
+  color: var(--ink-light);
   position: relative;
   left: 1.2em;
   top: -1.3em;
@@ -506,7 +973,7 @@ input[type="text"], input[type="email"], input[type="number"], select {
 .auth-container input:focus~label,
 .auth-container input:not(:placeholder-shown)~label {
   top: -3em;
-  color: var(--blue);
+  color: var(--red);
   font-size: 15px;
 }
 
@@ -518,29 +985,30 @@ input[type="text"], input[type="email"], input[type="number"], select {
 
 .recover a {
   text-decoration: none;
-  color: rgb(125, 125, 235);
+  color: var(--border-focus);
 }
 
 .recover a:hover {
-  color: blue;
+  color: var(--red);
   text-decoration: underline;
 }
 
 .btn {
   font-size: 1.1rem;
-  padding: 8px 0;
-  border-radius: 5px;
+  padding: 12px 0;
+  border-radius: 8px;
   outline: none;
   border: none;
   width: 100%;
-  background: var(--blue);
-  color: white;
+  background: var(--red);
+  color: #fff;
   cursor: pointer;
-  transition: 0.3s;
+  transition: background 0.3s ease;
+  font-weight: 600;
 }
 
 .btn:hover {
-  background: #c10518;
+  background: var(--red-hover);
 }
 
 .or {
@@ -554,7 +1022,7 @@ input[type="text"], input[type="email"], input[type="number"], select {
 }
 
 .icons i {
-  color: var(--blue);
+  color: var(--red);
   padding: 0.8rem 1.5rem;
   border-radius: 10px;
   font-size: 1.5rem;
@@ -565,9 +1033,9 @@ input[type="text"], input[type="email"], input[type="number"], select {
 }
 
 .icons i:hover {
-  background: #07001f;
+  background: var(--navy);
   font-size: 1.6rem;
-  border: 2px solid var(--blue);
+  border: 2px solid var(--red);
 }
 
 .links {
@@ -579,7 +1047,7 @@ input[type="text"], input[type="email"], input[type="number"], select {
 }
 
 .links button {
-  color: var(--blue);
+  color: var(--red);
   border: none;
   background-color: transparent;
   font-size: 1rem;
@@ -589,5 +1057,5 @@ input[type="text"], input[type="email"], input[type="number"], select {
 
 .links button:hover {
   text-decoration: underline;
-  color: blue;
+  color: var(--red-hover);
 }
