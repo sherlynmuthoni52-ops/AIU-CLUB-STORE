@@ -289,8 +289,9 @@ if ($eventsCount === 0) {
 // Seed users.
 $usersCount = (int) $db->query('SELECT COUNT(*) AS total FROM users')->fetch_assoc()['total'];
 if ($usersCount === 0) {
-    // Password hash for "password123"
-    $hash = '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi';
+    // Hash for the documented sample password "password123".
+    // Computed at runtime so it always matches the password below.
+    $hash = password_hash('password123', PASSWORD_DEFAULT);
     $db->query("INSERT INTO users (name, email, password, role) VALUES
         ('Super Admin', 'super@aiu.edu', '$hash', 'super_admin'),
         ('John Club Admin', 'john@aiu.edu', '$hash', 'club_admin'),
@@ -298,6 +299,23 @@ if ($usersCount === 0) {
     $messages[] = '<span style="color:green;">✔ Seeded 3 sample users (password: password123).</span>';
 } else {
     $messages[] = '<span style="color:green;">✔ Users table already has ' . $usersCount . ' rows.</span>';
+}
+
+// Repair the previously-shipped stale demo hash (it encoded "password",
+// not the documented "password123"). Only rows still using that exact stale
+// hash are updated, so genuine accounts are never touched.
+$staleHash = '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi';
+$repaired = 0;
+$repairStmt = $db->prepare('UPDATE users SET password = ? WHERE email = ? AND password = ?');
+if ($repairStmt) {
+    foreach (['super@aiu.edu', 'john@aiu.edu', 'jane@aiu.edu'] as $email) {
+        $repairStmt->bind_param('sss', $hash, $email, $staleHash);
+        $repairStmt->execute();
+        $repaired += $repairStmt->affected_rows;
+    }
+}
+if ($repaired > 0) {
+    $messages[] = '<span style="color:green;">✔ Reset ' . $repaired . ' demo user(s) to password: password123.</span>';
 }
 
 // Seed club allocations.

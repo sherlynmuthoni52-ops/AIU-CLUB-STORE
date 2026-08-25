@@ -30,9 +30,9 @@ INSERT INTO events (club_id, title, description, venue, `date`, capacity, ticket
 -- Insert sample users (passwords are hashed for "password123").
 -- Note: Adjust these IDs if your users table already has data.
 INSERT INTO users (name, email, password, role) VALUES
-('Super Admin', 'super@aiu.edu', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'super_admin'),
-('John Club Admin', 'john@aiu.edu', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'club_admin'),
-('Jane Student', 'jane@aiu.edu', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'student');
+('Super Admin', 'super@aiu.edu', '$2y$10$nJqBwW5YDTQIXWKyYjidj.v9hkQoG6q2VfGbQGhQA.yghv02Pvb.a', 'super_admin'),
+('John Club Admin', 'john@aiu.edu', '$2y$10$nJqBwW5YDTQIXWKyYjidj.v9hkQoG6q2VfGbQGhQA.yghv02Pvb.a', 'club_admin'),
+('Jane Student', 'jane@aiu.edu', '$2y$10$nJqBwW5YDTQIXWKyYjidj.v9hkQoG6q2VfGbQGhQA.yghv02Pvb.a', 'student');
 
 -- Insert sample club allocations.
 -- Assumes: user ID 2 = John Club Admin, club IDs 1 = Sports Club, 2 = Tech Club.
