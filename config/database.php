@@ -118,13 +118,17 @@ function verify_and_migrate(mysqli $conn, array $expectedTables, bool $autoRunSe
     // -------------------------------------------------------------------------
 
     if ($autoRunSetup) {
-        $userCountRes = $conn->query('SELECT COUNT(*) AS total FROM users');
-        $userCount = $userCountRes ? (int) $userCountRes->fetch_assoc()['total'] : 0;
+        // Ensure the documented demo accounts exist with a valid password.
+        // Triggers setup whenever any of the three demo emails is missing or
+        // has an empty password, so login works out of the box in any state
+        // (not only when the users table is completely empty).
+        $demoRes = $conn->query("SELECT COUNT(*) AS total FROM users WHERE email IN ('super@aiu.edu','john@aiu.edu','jane@aiu.edu') AND password IS NOT NULL AND password != ''");
+        $demoOk = $demoRes ? (int) $demoRes->fetch_assoc()['total'] : 0;
 
-        if ($userCount === 0) {
+        if ($demoOk < 3) {
             $setupPath = __DIR__ . '/../setup_database.php';
             if (is_file($setupPath) && is_readable($setupPath)) {
-                error_log('[DB_STARTUP] No users found; running setup script to seed demo data: ' . $setupPath);
+                error_log('[DB_STARTUP] Demo accounts incomplete; running setup script to seed/fix them: ' . $setupPath);
 
                 $php = defined('PHP_BINARY') ? PHP_BINARY : 'php';
                 $cmd = escapeshellcmd($php) . ' ' . escapeshellarg($setupPath) . ' 2>&1';

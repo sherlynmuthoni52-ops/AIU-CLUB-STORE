@@ -286,36 +286,28 @@ if ($eventsCount === 0) {
     $messages[] = '<span style="color:green;">✔ Events table already has ' . $eventsCount . ' rows.</span>';
 }
 
-// Seed users.
-$usersCount = (int) $db->query('SELECT COUNT(*) AS total FROM users')->fetch_assoc()['total'];
-if ($usersCount === 0) {
-    // Hash for the documented sample password "password123".
-    // Computed at runtime so it always matches the password below.
-    $hash = password_hash('password123', PASSWORD_DEFAULT);
-    $db->query("INSERT INTO users (name, email, password, role) VALUES
-        ('Super Admin', 'super@aiu.edu', '$hash', 'super_admin'),
-        ('John Club Admin', 'john@aiu.edu', '$hash', 'club_admin'),
-        ('Jane Student', 'jane@aiu.edu', '$hash', 'student')");
-    $messages[] = '<span style="color:green;">✔ Seeded 3 sample users (password: password123).</span>';
-} else {
-    $messages[] = '<span style="color:green;">✔ Users table already has ' . $usersCount . ' rows.</span>';
-}
-
-// Repair the previously-shipped stale demo hash (it encoded "password",
-// not the documented "password123"). Only rows still using that exact stale
-// hash are updated, so genuine accounts are never touched.
-$staleHash = '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi';
-$repaired = 0;
-$repairStmt = $db->prepare('UPDATE users SET password = ? WHERE email = ? AND password = ?');
-if ($repairStmt) {
-    foreach (['super@aiu.edu', 'john@aiu.edu', 'jane@aiu.edu'] as $email) {
-        $repairStmt->bind_param('sss', $hash, $email, $staleHash);
-        $repairStmt->execute();
-        $repaired += $repairStmt->affected_rows;
+// Ensure the documented demo accounts always exist with the password "password123".
+// Uses an upsert so it works whether the accounts are missing, were deleted, or
+// ended up with an empty/incorrect password during testing. Only these three
+// @aiu.edu addresses are targeted, so genuine (non-demo) accounts are untouched.
+$hash = password_hash('password123', PASSWORD_DEFAULT);
+$demoUsers = [
+    ['Super Admin', 'super@aiu.edu', 'super_admin'],
+    ['John Club Admin', 'john@aiu.edu', 'club_admin'],
+    ['Jane Student', 'jane@aiu.edu', 'student'],
+];
+$upsertStmt = $db->prepare(
+    'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)
+     ON DUPLICATE KEY UPDATE password = VALUES(password), role = VALUES(role), name = VALUES(name)'
+);
+if ($upsertStmt) {
+    foreach ($demoUsers as [$name, $email, $role]) {
+        $upsertStmt->bind_param('ssss', $name, $email, $hash, $role);
+        $upsertStmt->execute();
     }
-}
-if ($repaired > 0) {
-    $messages[] = '<span style="color:green;">✔ Reset ' . $repaired . ' demo user(s) to password: password123.</span>';
+    $messages[] = '<span style="color:green;">✔ Demo users present (password: password123).</span>';
+} else {
+    $messages[] = '<span style="color:red;">✘ Could not prepare demo user upsert: ' . htmlspecialchars($db->error) . '</span>';
 }
 
 // Seed club allocations.
