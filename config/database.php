@@ -111,45 +111,6 @@ function verify_and_migrate(mysqli $conn, array $expectedTables, bool $autoRunSe
     }
 
     // -------------------------------------------------------------------------
-    // Seed demo data when the schema exists but has no user accounts.
-    // This keeps login functional even when the schema was created from
-    // database.sql (which is schema-only) instead of relying on the app to
-    // auto-run setup only when tables are entirely missing.
-    // -------------------------------------------------------------------------
-
-    if ($autoRunSetup) {
-        // Ensure the documented demo accounts exist with a valid password.
-        // Triggers setup whenever any of the three demo emails is missing or
-        // has an empty password, so login works out of the box in any state
-        // (not only when the users table is completely empty).
-        $demoRes = $conn->query("SELECT COUNT(*) AS total FROM users WHERE email IN ('super@aiu.edu','john@aiu.edu','jane@aiu.edu') AND password IS NOT NULL AND password != ''");
-        $demoOk = $demoRes ? (int) $demoRes->fetch_assoc()['total'] : 0;
-
-        if ($demoOk < 3) {
-            $setupPath = __DIR__ . '/../setup_database.php';
-            if (is_file($setupPath) && is_readable($setupPath)) {
-                error_log('[DB_STARTUP] Demo accounts incomplete; running setup script to seed/fix them: ' . $setupPath);
-
-                $php = defined('PHP_BINARY') ? PHP_BINARY : 'php';
-                $cmd = escapeshellcmd($php) . ' ' . escapeshellarg($setupPath) . ' 2>&1';
-
-                $output = [];
-                $returnVar = 0;
-                @exec($cmd, $output, $returnVar);
-
-                error_log('[DB_STARTUP] setup_database.php (seed) exit code: ' . $returnVar);
-                if (!empty($output)) {
-                    foreach ($output as $line) {
-                        error_log('[DB_SETUP_OUTPUT] ' . $line);
-                    }
-                }
-            } else {
-                error_log('[DB_STARTUP] setup_database.php not found or not readable: ' . $setupPath);
-            }
-        }
-    }
-
-    // -------------------------------------------------------------------------
     // Column-level migrations for existing databases
     // -------------------------------------------------------------------------
 

@@ -286,29 +286,9 @@ if ($eventsCount === 0) {
     $messages[] = '<span style="color:green;">✔ Events table already has ' . $eventsCount . ' rows.</span>';
 }
 
-// Ensure the documented demo accounts always exist with the password "password123".
-// Uses an upsert so it works whether the accounts are missing, were deleted, or
-// ended up with an empty/incorrect password during testing. Only these three
-// @aiu.edu addresses are targeted, so genuine (non-demo) accounts are untouched.
-$hash = password_hash('password123', PASSWORD_DEFAULT);
-$demoUsers = [
-    ['Super Admin', 'super@aiu.edu', 'super_admin'],
-    ['John Club Admin', 'john@aiu.edu', 'club_admin'],
-    ['Jane Student', 'jane@aiu.edu', 'student'],
-];
-$upsertStmt = $db->prepare(
-    'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)
-     ON DUPLICATE KEY UPDATE password = VALUES(password), role = VALUES(role), name = VALUES(name)'
-);
-if ($upsertStmt) {
-    foreach ($demoUsers as [$name, $email, $role]) {
-        $upsertStmt->bind_param('ssss', $name, $email, $hash, $role);
-        $upsertStmt->execute();
-    }
-    $messages[] = '<span style="color:green;">✔ Demo users present (password: password123).</span>';
-} else {
-    $messages[] = '<span style="color:red;">✘ Could not prepare demo user upsert: ' . htmlspecialchars($db->error) . '</span>';
-}
+// Note: user accounts are NOT created here on purpose. Visitors register
+// through the sign-up form (register.php / login.php), so only real accounts
+// exist in the database. No demo accounts are seeded or auto-created.
 
 // Seed club allocations.
 $allocationsCount = (int) $db->query('SELECT COUNT(*) AS total FROM club_admins')->fetch_assoc()['total'];
@@ -372,7 +352,7 @@ foreach ($expectedTables as $table) {
         <?php if ($allTablesExist) { ?>
             <div class="success">
                 <strong>✔ Setup complete!</strong> All tables are created and verified.
-                <p>You can now log in as <strong>super@aiu.edu</strong> / <strong>password123</strong> and allocate clubs to admins.</p>
+                <p>Tables and sample data are ready. Register a new account or log in with an existing user to continue.</p>
                 <a class="back" href="admin.php">&larr; Go to Admin Dashboard</a>
             </div>
         <?php } else { ?>
