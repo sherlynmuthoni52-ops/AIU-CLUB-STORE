@@ -34,6 +34,36 @@ function current_user(): ?array
 }
 
 /**
+ * Validate a submitted password against a stored hash or legacy plain-text value.
+ * Supports modern password_hash() entries and older plain-text / MD5 credentials,
+ * which are common in older database imports.
+ *
+ * @param string $submittedPassword
+ * @param string $storedPassword
+ * @return bool
+ */
+function verify_user_password(string $submittedPassword, string $storedPassword): bool
+{
+    if ($storedPassword === '') {
+        return false;
+    }
+
+    if (password_get_info($storedPassword)['algo'] !== null && password_verify($submittedPassword, $storedPassword)) {
+        return true;
+    }
+
+    if (hash_equals($storedPassword, $submittedPassword)) {
+        return true;
+    }
+
+    if (preg_match('/^[a-f0-9]{32}$/i', $storedPassword) === 1 && hash_equals(strtolower($storedPassword), md5($submittedPassword))) {
+        return true;
+    }
+
+    return false;
+}
+
+/**
  * Get the total quantity of items in the shopping cart.
  *
  * @return int Total number of cart items.

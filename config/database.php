@@ -115,6 +115,9 @@ function verify_and_migrate(mysqli $conn, array $expectedTables, bool $autoRunSe
     // -------------------------------------------------------------------------
 
     $columnMigrations = [
+        'users' => [
+            'role' => "ALTER TABLE users ADD COLUMN role ENUM('student', 'club_admin', 'super_admin') NOT NULL DEFAULT 'student' AFTER password",
+        ],
         'order_items' => [
             'size' => "ALTER TABLE order_items ADD COLUMN size VARCHAR(20) NULL AFTER product_id",
         ],

@@ -35,29 +35,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = database()->prepare(
             'SELECT id, name, email, password, role FROM users WHERE email = ? LIMIT 1'
         );
-        $stmt->bind_param('s', $email);
-        $stmt->execute();
+        if (!$stmt) {
+            $error = 'The login system is unavailable right now. Please try again later.';
+        } else {
+            $stmt->bind_param('s', $email);
+            $stmt->execute();
+            $user = $stmt->get_result()->fetch_assoc();
 
-        $user = $stmt->get_result()->fetch_assoc();
+            if ($user && verify_user_password($password, (string) $user['password'])) {
+                $storedPassword = (string) $user['password'];
+                $legacyPassword = password_get_info($storedPassword)['algo'] === null;
 
-        if ($user && password_verify($password, $user['password'])) {
-            unset($user['password']);
-            $_SESSION['user'] = $user;
-            set_message('Welcome back, ' . $user['name'] . '!');
+                if ($legacyPassword) {
+                    $newHash = password_hash($password, PASSWORD_DEFAULT);
+                    $update = database()->prepare('UPDATE users SET password = ? WHERE id = ?');
+                    if ($update) {
+                        $update->bind_param('si', $newHash, $user['id']);
+                        $update->execute();
+                    }
+                }
 
-            $redirect = 'index.php';
-            if (!headers_sent()) {
-                header('Location: ' . $redirect);
-                exit;
-            } else {
-                // Fallback: output a minimal HTML page with meta-refresh and JS redirect
-                echo '<!doctype html><html><head><meta http-equiv="refresh" content="0;url=' . htmlspecialchars($redirect) . '">';
-                echo '<script>window.location.href = ' . json_encode($redirect) . ';</script></head><body>If you are not redirected, <a href="' . htmlspecialchars($redirect) . '">click here</a>.</body></html>';
-                exit;
+                unset($user['password']);
+                $_SESSION['user'] = $user;
+                set_message('Welcome back, ' . $user['name'] . '!');
+
+                $redirect = 'index.php';
+                if (!headers_sent()) {
+                    header('Location: ' . $redirect);
+                    exit;
+                } else {
+                    echo '<!doctype html><html><head><meta http-equiv="refresh" content="0;url=' . htmlspecialchars($redirect) . '">';
+                    echo '<script>window.location.href = ' . json_encode($redirect) . ';</script></head><body>If you are not redirected, <a href="' . htmlspecialchars($redirect) . '">click here</a>.</body></html>';
+                    exit;
+                }
             }
-        }
 
-        $error = 'Not Found, Incorrect Email or Password';
+            $error = 'Not Found, Incorrect Email or Password';
+        }
     }
 }
 
