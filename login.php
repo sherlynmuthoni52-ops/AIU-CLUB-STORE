@@ -44,8 +44,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             unset($user['password']);
             $_SESSION['user'] = $user;
             set_message('Welcome back, ' . $user['name'] . '!');
-            header('Location: index.php');
-            exit;
+
+            $redirect = 'index.php';
+            if (!headers_sent()) {
+                header('Location: ' . $redirect);
+                exit;
+            } else {
+                // Fallback: output a minimal HTML page with meta-refresh and JS redirect
+                echo '<!doctype html><html><head><meta http-equiv="refresh" content="0;url=' . htmlspecialchars($redirect) . '">';
+                echo '<script>window.location.href = ' . json_encode($redirect) . ';</script></head><body>If you are not redirected, <a href="' . htmlspecialchars($redirect) . '">click here</a>.</body></html>';
+                exit;
+            }
         }
 
         $error = 'Not Found, Incorrect Email or Password';
