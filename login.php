@@ -7,7 +7,11 @@ $showSignup = false;
 $showLogoutPopup = false;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['signUp'])) {
+    // Do not depend on the submit button being included in the POST body.
+    // Some browsers omit it when a form is submitted with the Enter key.
+    $action = $_POST['action'] ?? (isset($_POST['signUp']) ? 'signup' : (isset($_POST['signIn']) ? 'signin' : ''));
+
+    if ($action === 'signup') {
         $showSignup = true;
         $name = trim($_POST['name'] ?? '');
         $email = strtolower(trim($_POST['email'] ?? ''));
@@ -36,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->close();
             }
         }
-    } elseif (isset($_POST['signIn'])) {
+    } elseif ($action === 'signin') {
         $showSignup = false;
         $email = strtolower(trim($_POST['email'] ?? ''));
         $password = $_POST['password'] ?? '';
@@ -81,7 +85,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     set_message('Welcome back, ' . $user['name'] . '!');
                     $stmt->close();
 
-                    header('Location: index.php');
+                    // Ensure Apache saves the authenticated session before the
+                    // next request reaches index.php.
+                    session_write_close();
+
+                    if (!headers_sent()) {
+                        header('Location: index.php', true, 303);
+                    } else {
+                        // This keeps the redirect working even if a server
+                        // configuration or included file emitted output first.
+                        echo '<!doctype html><html><head><meta http-equiv="refresh" content="0;url=index.php">';
+                        echo '<script>window.location.replace("index.php");</script></head><body>';
+                        echo 'Signing you in… <a href="index.php">Continue</a>.</body></html>';
+                    }
                     exit;
                 }
 
@@ -105,7 +121,8 @@ require __DIR__ . '/includes/header.php';
     <?php if ($error && !$showSignup) { ?>
       <p class="error" style="color:#9b2c2c; text-align:center; margin-bottom:1rem;"><?php echo htmlspecialchars($error); ?></p>
     <?php } ?>
-    <form method="post" class="auth-form">
+    <form method="post" action="login.php" class="auth-form">
+      <input type="hidden" name="action" value="signin">
       <div class="input-group">
         <i class="fas fa-envelope"></i>
         <input type="email" name="email" id="signin-email" placeholder="Email" required>
@@ -129,7 +146,8 @@ require __DIR__ . '/includes/header.php';
     <?php if ($error && $showSignup) { ?>
       <p class="error" style="color:#9b2c2c; text-align:center; margin-bottom:1rem;"><?php echo htmlspecialchars($error); ?></p>
     <?php } ?>
-    <form method="post" class="auth-form">
+    <form method="post" action="login.php" class="auth-form">
+      <input type="hidden" name="action" value="signup">
       <div class="input-group">
         <i class="fas fa-user"></i>
         <input type="text" name="name" id="signup-name" placeholder="Name" required>
