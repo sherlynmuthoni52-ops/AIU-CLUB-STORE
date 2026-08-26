@@ -10,67 +10,84 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['signUp'])) {
         $showSignup = true;
         $name = trim($_POST['name'] ?? '');
-        $email = trim($_POST['email'] ?? '');
+        $email = strtolower(trim($_POST['email'] ?? ''));
         $password = $_POST['password'] ?? '';
 
         if (!$name || !filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($password) < 8) {
             $error = 'Enter your name, a valid email, and a password of at least 8 characters.';
         } else {
             $stmt = database()->prepare('INSERT INTO users (name, email, password) VALUES (?, ?, ?)');
-            $hash = password_hash($password, PASSWORD_DEFAULT);
+            if (!$stmt) {
+                $error = 'Registration is temporarily unavailable. Please try again later.';
+            } else {
+                $hash = password_hash($password, PASSWORD_DEFAULT);
 
-            if ($stmt->bind_param('sss', $name, $email, $hash) && $stmt->execute()) {
-                set_message('Registration successful. Please log in.');
-                header('Location: login.php');
-                exit;
+                if ($stmt->bind_param('sss', $name, $email, $hash) && $stmt->execute()) {
+                    $stmt->close();
+                    set_message('Registration successful. Please sign in.');
+                    header('Location: login.php');
+                    exit;
+                }
+
+                // MySQL error 1062 is a duplicate value for the unique email column.
+                $error = $stmt->errno === 1062
+                    ? 'An account with this email already exists. Please sign in.'
+                    : 'We could not create your account. Please try again later.';
+                $stmt->close();
             }
-
-            $error = 'This email may already be registered.';
         }
     } elseif (isset($_POST['signIn'])) {
         $showSignup = false;
-        $email = trim($_POST['email'] ?? '');
+        $email = strtolower(trim($_POST['email'] ?? ''));
         $password = $_POST['password'] ?? '';
 
-        $stmt = database()->prepare(
-            'SELECT id, name, email, password, role FROM users WHERE email = ? LIMIT 1'
-        );
-        if (!$stmt) {
-            $error = 'The login system is unavailable right now. Please try again later.';
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL) || $password === '') {
+            $error = 'Enter your email address and password.';
         } else {
+            $stmt = database()->prepare(
+                'SELECT id, name, email, password, role FROM users WHERE email = ? LIMIT 1'
+            );
+        }
+
+        if (isset($stmt) && !$stmt) {
+            $error = 'The login system is unavailable right now. Please try again later.';
+        } elseif (isset($stmt)) {
             $stmt->bind_param('s', $email);
-            $stmt->execute();
-            $user = $stmt->get_result()->fetch_assoc();
+            if (!$stmt->execute()) {
+                $error = 'The login system is unavailable right now. Please try again later.';
+            } else {
+                $user = $stmt->get_result()->fetch_assoc();
 
-            if ($user && verify_user_password($password, (string) $user['password'])) {
-                $storedPassword = (string) $user['password'];
-                $legacyPassword = password_get_info($storedPassword)['algo'] === null;
+                if ($user && verify_user_password($password, (string) $user['password'])) {
+                    $storedPassword = (string) $user['password'];
+                    $legacyPassword = password_get_info($storedPassword)['algo'] === null;
 
-                if ($legacyPassword) {
-                    $newHash = password_hash($password, PASSWORD_DEFAULT);
-                    $update = database()->prepare('UPDATE users SET password = ? WHERE id = ?');
-                    if ($update) {
-                        $update->bind_param('si', $newHash, $user['id']);
-                        $update->execute();
+                    if ($legacyPassword) {
+                        $newHash = password_hash($password, PASSWORD_DEFAULT);
+                        $update = database()->prepare('UPDATE users SET password = ? WHERE id = ?');
+                        if ($update) {
+                            $update->bind_param('si', $newHash, $user['id']);
+                            $update->execute();
+                            $update->close();
+                        }
                     }
-                }
 
-                unset($user['password']);
-                $_SESSION['user'] = $user;
-                set_message('Welcome back, ' . $user['name'] . '!');
+                    unset($user['password']);
+                    // Keep the profile data loaded from the existing users table available
+                    // throughout the application without retaining the password in the session.
+                    $user['role'] = $user['role'] ?: 'student';
+                    session_regenerate_id(true);
+                    $_SESSION['user'] = $user;
+                    set_message('Welcome back, ' . $user['name'] . '!');
+                    $stmt->close();
 
-                $redirect = 'index.php';
-                if (!headers_sent()) {
-                    header('Location: ' . $redirect);
-                    exit;
-                } else {
-                    echo '<!doctype html><html><head><meta http-equiv="refresh" content="0;url=' . htmlspecialchars($redirect) . '">';
-                    echo '<script>window.location.href = ' . json_encode($redirect) . ';</script></head><body>If you are not redirected, <a href="' . htmlspecialchars($redirect) . '">click here</a>.</body></html>';
+                    header('Location: index.php');
                     exit;
                 }
+
+                $error = 'Incorrect email or password.';
             }
-
-            $error = 'Not Found, Incorrect Email or Password';
+            $stmt->close();
         }
     }
 }
